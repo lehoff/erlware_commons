@@ -6,6 +6,8 @@
 	     ec_lists,
 	     ec_string,
 	     ec_semver,
-	     ec_extends]},
+	     ec_implements,
+	     ec_dictionary,
+	     ec_assoc_list]},
   {registered, []},
   {applications, [kernel, stdlib]}]}.

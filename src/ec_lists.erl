@@ -168,5 +168,4 @@ fetch3_test() ->
 			       false
 		       end,
 		      TestData)).
-
 -endif.
