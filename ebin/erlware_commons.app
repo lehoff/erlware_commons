@@ -5,7 +5,7 @@
   {modules, [
 	     ec_lists,
 	     ec_string,
-	     ec_semver
-	    ]},
+	     ec_semver,
+	     ec_extends]},
   {registered, []},
   {applications, [kernel, stdlib]}]}.
