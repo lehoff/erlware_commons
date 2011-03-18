@@ -21,7 +21,8 @@
 	 add/3,
 	 remove/2,
 	 has_value/2,
-	 size/1]).
+	 size/1,
+	 to_list/1]).
 
 -export_type([dictionary/0,
 	      key/0,
@@ -52,7 +53,8 @@ behaviour_info(callback) ->
      {add, 3},
      {remove, 2},
      {has_value, 2},
-     {size, 1}];
+     {size, 1},
+     {to_list, 1}];
 behaviour_info(_) ->
     undefined.
 
@@ -115,3 +117,9 @@ has_value(Value, #dict_t{callback = Mod, data = Data}) ->
 -spec size(dictionary()) -> integer().
 size(#dict_t{callback = Mod, data = Data}) ->
     Mod:size(Data).
+
+%% @doc Return the contents of this dictionary as a list of key value
+%% pairs.
+-spec to_list(dictionary()) -> [{key(), value()}].
+to_list(#dict_t{callback = Mod, data = Data}) ->
+    Mod:to_list(Data).

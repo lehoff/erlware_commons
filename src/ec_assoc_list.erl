@@ -16,7 +16,8 @@
 	 add/3,
 	 remove/2,
 	 has_value/2,
-	 size/1]).
+	 size/1,
+	 to_list/1]).
 
 %%%===================================================================
 %%% Types
@@ -95,6 +96,13 @@ has_value(Value, {ec_assoc_list, Data}) ->
 -spec size(Object::assoc_list()) -> integer().
 size({ec_assoc_list, Data}) ->
     length(Data).
+
+%% @doc Return the contents of this dictionary as a list of key value
+%% pairs.
+-spec to_list(assoc_list()) -> [{ec_dictionary:key(),
+				 ec_dictionary:value()}].
+to_list({ec_assoc_list, Data}) ->
+   Data.
 
 %%%===================================================================
 %%% Tests
