@@ -24,6 +24,7 @@
 	 size/1,
 	 to_list/1]).
 
+
 -export_type([dictionary/0,
 	      key/0,
 	      value/0]).
