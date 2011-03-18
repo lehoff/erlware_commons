@@ -45,7 +45,7 @@
 
 %% @doc export the behaviour callbacks for this type
 %% @private
-behaviour_info(callback) ->
+behaviour_info(callbacks) ->
     [{new, 0},
      {has_key, 2},
      {get, 2},
@@ -106,7 +106,7 @@ remove(Key, #dict_t{callback=Mod,data=Data}=Dict) ->
 %% @param Dict the dictionary object to check
 %% @param Value The value to check if exists
 -spec has_value(value(),dictionary()) -> boolean().
-has_value(Value, #dict_t{callback=Mod, data=Data}=Dict) ->
+has_value(Value, #dict_t{callback=Mod, data=Data}) ->
     Mod:has_value(Value,Data).
 
 %% @doc return the current number of key value pairs in the dictionary
@@ -114,4 +114,4 @@ has_value(Value, #dict_t{callback=Mod, data=Data}=Dict) ->
 %% @param Dict the object return the size for.
 -spec size(dictionary()) -> integer().
 size(#dict_t{callback=Mod, data=Data}) ->
-    Mod:size(data).
+    Mod:size(Data).
