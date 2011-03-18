@@ -32,7 +32,7 @@
 %%%===================================================================
 
 -record(dict_t,
-	{ callback,
+	{callback,
 	  data}).
 
 -opaque dictionary() :: #dict_t{}.
@@ -59,18 +59,18 @@ behaviour_info(_) ->
 %% @doc create a new dictionary object from the specified module. The
 %% module should implement the dictionary behaviour.
 %%
-%% @param ModuleName The module name. 
+%% @param ModuleName The module name.
 -spec new(module()) -> dictionary().
 new(ModuleName) when is_atom(ModuleName) ->
-    #dict_t{ callback=ModuleName, data = ModuleName:new() }.
+    #dict_t{callback = ModuleName, data = ModuleName:new()}.
 
 %% @doc check to see if the dictionary provided has the specified key.
 %%
 %% @param Dict The dictory object to check
 %% @param Key The key to check the dictionary for
--spec has_key(key(),dictionary()) -> boolean().
-has_key(Key,#dict_t{callback=Mod,data=Data}) ->
-    Mod:has_key(Key,Data).
+-spec has_key(key(), dictionary()) -> boolean().
+has_key(Key, #dict_t{callback = Mod, data = Data}) ->
+    Mod:has_key(Key, Data).
 
 %% @doc given a key return that key from the dictionary. If the key is
 %% not found throw a 'not_found' exception.
@@ -78,9 +78,9 @@ has_key(Key,#dict_t{callback=Mod,data=Data}) ->
 %% @param Dict The dictionary object to return the value from
 %% @param Key The key requested
 %% @throws not_found when the key does not exist
--spec get(key(),dictionary()) -> value().
-get(Key,#dict_t{callback=Mod,data=Data}) ->
-    Mod:get(Key,Data).
+-spec get(key(), dictionary()) -> value().
+get(Key, #dict_t{callback = Mod, data = Data}) ->
+    Mod:get(Key, Data).
 
 %% @doc add a new value to the existing dictionary. Return a new
 %% dictionary containing the value.
@@ -88,9 +88,9 @@ get(Key,#dict_t{callback=Mod,data=Data}) ->
 %% @param Dict the dictionary object to add too
 %% @param Key the key to add
 %% @param Value the value to add
--spec add( key(), value(), dictionary()) -> dictionary().
-add(Key, Value, #dict_t{callback=Mod,data=Data}=Dict) ->
-    Dict#dict_t{ data = Mod:add(Key,Value,Data) }.
+-spec add(key(), value(), dictionary()) -> dictionary().
+add(Key, Value, #dict_t{callback = Mod, data = Data} = Dict) ->
+    Dict#dict_t{data = Mod:add(Key, Value, Data)}.
 
 %% @doc Remove a value from the dictionary returning a new dictionary
 %% with the value removed.
@@ -98,20 +98,20 @@ add(Key, Value, #dict_t{callback=Mod,data=Data}=Dict) ->
 %% @param Dict the dictionary object to remove the value from
 %% @param Key the key of the key/value pair to remove
 -spec remove(key(), dictionary()) -> dictionary().
-remove(Key, #dict_t{callback=Mod,data=Data}=Dict) ->
-    Dict#dict_t{ data = Mod:remove(Key,Data) }.
+remove(Key, #dict_t{callback = Mod, data = Data} = Dict) ->
+    Dict#dict_t{data = Mod:remove(Key, Data)}.
 
 %% @doc Check to see if the value exists in the dictionary
 %%
 %% @param Dict the dictionary object to check
 %% @param Value The value to check if exists
--spec has_value(value(),dictionary()) -> boolean().
-has_value(Value, #dict_t{callback=Mod, data=Data}=Dict) ->
-    Mod:has_value(Value,Data).
+-spec has_value(value(), dictionary()) -> boolean().
+has_value(Value, #dict_t{callback = Mod, data = Data}) ->
+    Mod:has_value(Value, Data).
 
 %% @doc return the current number of key value pairs in the dictionary
 %%
 %% @param Dict the object return the size for.
 -spec size(dictionary()) -> integer().
-size(#dict_t{callback=Mod, data=Data}) ->
-    Mod:size(data).
+size(#dict_t{callback = Mod, data = Data}) ->
+    Mod:size(Data).
