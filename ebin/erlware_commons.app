@@ -9,6 +9,7 @@
 	     ec_implements,
 	     ec_dictionary,
 	     ec_gb_trees,
+	     ec_dict,
 	     ec_assoc_list]},
   {registered, []},
   {applications, [kernel, stdlib]}]}.
