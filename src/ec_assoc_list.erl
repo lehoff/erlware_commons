@@ -21,8 +21,7 @@
 %%%===================================================================
 %%% Types
 %%%===================================================================
--opaque assoc_list() :: {ec_assoc_list,
-			 [{ec_dictionary:key(), ec_dictionary:value()}]}.
+-opaque assoc_list() :: [{term(), term()}].
 
 %%%===================================================================
 %%% API
@@ -42,8 +41,8 @@ new() ->
 %%
 %% @param Object The dictory object to check
 %% @param Key The key to check the dictionary for
--spec has_key(Object::assoc_list(), ec_dictionary:key()) -> boolean().
-has_key({ec_assoc_list, Data}, Key) ->
+-spec has_key(ec_dictionary:key(), Object::assoc_list()) -> boolean().
+has_key(Key, {ec_assoc_list, Data}) ->
     lists:keymember(Key, 1, Data).
 
 %% @doc given a key return that key from the dictionary. If the key is
@@ -52,8 +51,8 @@ has_key({ec_assoc_list, Data}, Key) ->
 %% @param Object The dictionary object to return the value from
 %% @param Key The key requested
 %% @throws not_found when the key does not exist
--spec get(Object::assoc_list(), ec_dictionary:key()) -> ec_dictionary:value().
-get({ec_assoc_list, Data}, Key) ->
+-spec get(ec_dictionary:key(), Object::assoc_list()) -> ec_dictionary:value().
+get(Key, {ec_assoc_list, Data}) ->
     case lists:keyfind(Key, 1, Data) of
 	{Key, Value} ->
 	    Value;
@@ -67,9 +66,9 @@ get({ec_assoc_list, Data}, Key) ->
 %% @param Object the dictionary object to add too
 %% @param Key the key to add
 %% @param Value the value to add
--spec add(Object::assoc_list(), ec_dictionary:key(), ec_dictionary:value()) ->
+-spec add(ec_dictionary:key(), ec_dictionary:value(), Object::assoc_list()) ->
     assoc_list().
-add({ec_assoc_list, Data}, Key, Value) ->
+add(Key, Value, {ec_assoc_list, Data}) ->
     {ec_assoc_list, [{Key, Value} | Data]}.
 
 %% @doc Remove a value from the dictionary returning a new dictionary
@@ -77,17 +76,17 @@ add({ec_assoc_list, Data}, Key, Value) ->
 %%
 %% @param Object the dictionary object to remove the value from
 %% @param Key the key of the key/value pair to remove
--spec remove(Object::assoc_list(), ec_dictionary:key()) ->
+-spec remove(ec_dictionary:key(), Object::assoc_list()) ->
     assoc_list().
-remove({ec_assoc_list, Data}, Key) ->
+remove(Key, {ec_assoc_list, Data}) ->
     {ec_assoc_list, lists:keydelete(Key, 1, Data)}.
 
 %% @doc Check to see if the value exists in the dictionary
 %%
 %% @param Object the dictionary object to check
 %% @param Value The value to check if exists
--spec has_value(Object::assoc_list(), ec_dictionary:value()) -> boolean().
-has_value({ec_assoc_list, Data}, Value) ->
+-spec has_value(ec_dictionary:value(), Object::assoc_list()) -> boolean().
+has_value(Value, {ec_assoc_list, Data}) ->
     lists:keymember(Value, 2, Data).
 
 %% @doc return the current number of key value pairs in the dictionary
@@ -96,7 +95,6 @@ has_value({ec_assoc_list, Data}, Value) ->
 -spec size(Object::assoc_list()) -> integer().
 size({ec_assoc_list, Data}) ->
     length(Data).
-
 
 %%%===================================================================
 %%% Tests

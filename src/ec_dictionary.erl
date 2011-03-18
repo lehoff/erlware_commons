@@ -32,7 +32,7 @@
 %%%===================================================================
 
 -record(dict_t,
-	{ callback,
+	{callback,
 	  data}).
 
 -opaque dictionary() :: #dict_t{}.
