@@ -6,6 +6,7 @@
 %%% gb_trees as a backin
 %%% @end
 %%% @see ec_dictionary
+%%% @see gb_trees
 %%%-------------------------------------------------------------------
 -module(ec_gb_trees).
 

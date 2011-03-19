@@ -7,6 +7,7 @@
 %%%  ec_dictionary applies here as well.
 %%% @end
 %%% @see ec_dictionary
+%%% @see dict
 %%%-------------------------------------------------------------------
 -module(ec_dict).
 

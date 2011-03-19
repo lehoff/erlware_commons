@@ -2,9 +2,9 @@
 %%% @author Eric Merritt <ericbmerritt@gmail.com>
 %%% @copyright 2011 Erlware, LLC.
 %%%
-%%% @doc A module that supports association of keys to values. A map
-%%% cannot contain duplicate keys; each key can map to at most one
-%%% value.
+%%% @doc
+%%% A module that supports association of keys to values. A map cannot
+%%% contain duplicate keys; each key can map to at most one value.
 %%%
 %%%  This interface is a member of the Erlware Commons Library.
 %%% @end
