@@ -2,16 +2,11 @@
 %%% @author Eric Merritt <ericbmerritt@gmail.com>
 %%% @copyright 2011 Erlware, LLC.
 %%% @doc
-<<<<<<< HEAD:src/ec_gb_trees.erl
-%%%  provides an implementation of a map using an association list.
-%%% @end
-=======
 %%% This provides an implementation of the type ec_dictionary using
 %%% gb_trees as a backin
 %%% @end
 %%% @see ec_dictionary
 %%% @see gb_trees
->>>>>>> 14267406f2e58216c0852838da757e2a31f0b5de:src/ec_gb_trees.erl
 %%%-------------------------------------------------------------------
 -module(ec_gb_trees).
 
@@ -39,7 +34,6 @@
 %%% API
 %%%===================================================================
 
-<<<<<<< HEAD:src/ec_gb_trees.erl
 %% @doc create a new dictionary object from the specified module. The
 %% module should implement the dictionary behaviour. In the clause
 %% where an existing object is passed in new empty dictionary of the
@@ -97,7 +91,7 @@ add(Key, Value, Data) ->
 -spec remove(ec_dictionary:key(), Object::dictionary()) ->
     dictionary().
 remove(Key, Data) ->
-    gb_trees:delete(Key, Data).
+    gb_trees:delete_any(Key, Data).
 
 %% @doc Check to see if the value exists in the dictionary
 %%

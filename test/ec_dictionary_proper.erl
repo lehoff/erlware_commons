@@ -29,17 +29,21 @@ prop_size_increases_with_new_key() ->
 		end
 	    end).
 
+%%-----------------------------------------------------------------------------
+%% Generators
+%%-----------------------------------------------------------------------------
+
 my_dict() ->
     ?SIZED(N,dict(N)).
 
+%% This symbolic generator will create a random instance of a ec_dictionary
+%% that will be used in the properties.
 dict(0) ->
-    ec_dictionary:new(ec_gb_trees);
-%%    {call,ec_dictionary,new,[ec_gb_trees]};
+    {'$call',ec_dictionary,new,[ec_gb_trees]};
 dict(N) ->
-%%    ec_dictionary:add(integer(),integer(),dict(N-1)).
-%%    oneof([dict(0),
-	   ?LET(D,dict(N-1),
-%%		{call,ec_dictionary,add,[integer(),integer(),D]})
-		ec_dictionary:add(integer(),integer(),D))
-%%	  ])
-.
+    frequency([
+	       {1, {'$call',ec_dictionary,remove,[integer(),dict(N-1)]}},
+	       {2, {'$call',ec_dictionary,add,[integer(),integer(),dict(N-1)]}}
+	       ]).
+
+
