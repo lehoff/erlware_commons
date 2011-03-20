@@ -2,9 +2,9 @@
 %%% @author Eric Merritt <ericbmerritt@gmail.com>
 %%% @copyright 2011 Erlware, LLC.
 %%%
-%%% @doc A module that supports association of keys to values. A map
-%%% cannot contain duplicate keys; each key can map to at most one
-%%% value.
+%%% @doc
+%%% A module that supports association of keys to values. A map cannot
+%%% contain duplicate keys; each key can map to at most one value.
 %%%
 %%%  This interface is a member of the Erlware Commons Library.
 %%% @end
@@ -21,7 +21,10 @@
 	 add/3,
 	 remove/2,
 	 has_value/2,
-	 size/1]).
+	 size/1,
+	 to_list/1,
+	 from_list/2]).
+
 
 
 -export_type([dictionary/0,
@@ -53,7 +56,9 @@ behaviour_info(callbacks) ->
      {add, 3},
      {remove, 2},
      {has_value, 2},
-     {size, 1}];
+     {size, 1},
+     {to_list, 1},
+     {from_list, 1}];
 behaviour_info(_) ->
     undefined.
 
@@ -116,3 +121,21 @@ has_value(Value, #dict_t{callback = Mod, data = Data}) ->
 -spec size(dictionary()) -> integer().
 size(#dict_t{callback = Mod, data = Data}) ->
     Mod:size(Data).
+
+%% @doc Return the contents of this dictionary as a list of key value
+%% pairs.
+%%
+%% @param Dict the base dictionary to make use of.
+-spec to_list(Dict::dictionary()) -> [{key(), value()}].
+to_list(#dict_t{callback = Mod, data = Data}) ->
+    Mod:to_list(Data).
+
+%% @doc Create a new dictionary, of the specified implementation using
+%% the list provided as the starting contents.
+%%
+%% @param ModuleName the type to create the dictionary from
+%% @param List The list of key value pairs to start with
+-spec from_list(module(), [{key(), value()}]) -> dictionary().
+from_list(ModuleName, List) when is_list(List) ->
+    #dict_t{callback = ModuleName, data = ModuleName:from_list(List)}.
+
