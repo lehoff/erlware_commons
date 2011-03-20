@@ -2,8 +2,16 @@
 %%% @author Eric Merritt <ericbmerritt@gmail.com>
 %%% @copyright 2011 Erlware, LLC.
 %%% @doc
+<<<<<<< HEAD:src/ec_gb_trees.erl
 %%%  provides an implementation of a map using an association list.
 %%% @end
+=======
+%%% This provides an implementation of the type ec_dictionary using
+%%% gb_trees as a backin
+%%% @end
+%%% @see ec_dictionary
+%%% @see gb_trees
+>>>>>>> 14267406f2e58216c0852838da757e2a31f0b5de:src/ec_gb_trees.erl
 %%%-------------------------------------------------------------------
 -module(ec_gb_trees).
 
@@ -16,7 +24,11 @@
 	 add/3,
 	 remove/2,
 	 has_value/2,
-	 size/1]).
+	 size/1,
+	 to_list/1,
+	 from_list/1]).
+
+-export_type([dictionary/0]).
 
 %%%===================================================================
 %%% Types
@@ -27,6 +39,7 @@
 %%% API
 %%%===================================================================
 
+<<<<<<< HEAD:src/ec_gb_trees.erl
 %% @doc create a new dictionary object from the specified module. The
 %% module should implement the dictionary behaviour. In the clause
 %% where an existing object is passed in new empty dictionary of the
@@ -94,10 +107,23 @@ remove(Key, Data) ->
 has_value(Value, Data) ->
     lists:member(Value, gb_trees:values(Data)).
 
+
 %% @doc return the current number of key value pairs in the dictionary
 %%
 %% @param Object the object return the size for.
 -spec size(Object::dictionary()) -> integer().
 size(Data) ->
     gb_trees:size(Data).
+
+-spec to_list(dictionary()) -> [{ec_dictionary:key(), ec_dictionary:value()}].
+to_list(Data) ->
+    gb_trees:to_list(Data).
+
+-spec from_list([{ec_dictionary:key(), ec_dictionary:value()}]) -> dictionary().
+from_list(List) when is_list(List) ->
+    lists:foldl(fun({Key, Value}, Dict) ->
+			gb_trees:enter(Key, Value, Dict)
+		end,
+		gb_trees:empty(),
+		List).
 
