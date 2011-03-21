@@ -7,7 +7,7 @@
 
 -module(ec_dictionary_proper).
 
-
+-compile(export_all).
 
 -include_lib("proper/include/proper.hrl").
 
@@ -57,8 +57,7 @@ prop_get_after_add_returns_correct_value() ->
 prop_key_is_present_after_add() ->    
     ?FORALL({Dict,K,V}, {my_dict(),integer(),integer()},
 	    begin
-		ec_dictionary:has_key(K,ec_dictionary:add(K,V,Dict))
-	    end).
+		ec_dictionary:has_key(K,ec_dictionary:add(K,V,Dict))	    end).
 
 prop_value_is_present_after_add() ->    
     ?FORALL({Dict,K,V}, {my_dict(),integer(),integer()},
@@ -67,18 +66,19 @@ prop_value_is_present_after_add() ->
 	    end).
 
 prop_to_list_matches_get() ->
-    ?FORALL(SymDict,sym_dict2(),
+    ?FORALL(Dict,sym_dict(),
 	    begin
-		Dict = eval(SymDict),
+		%% Dict = eval(SymDict),
+		%% io:format("SymDict: ~p~n",[proper_symb:symbolic_seq(SymDict)]),
 		ToList = ec_dictionary:to_list(Dict),
-		io:format("ToList:~p~n",[ToList]),
+		%% io:format("ToList:~p~n",[ToList]),
 		GetList = 
 		    try [ {K,ec_dictionary:get(K,Dict)} || {K,_V} <- ToList ] of
 			List -> List
 		    catch
 			throw:not_found -> key_not_found
 		    end,
-		io:format("~p == ~p~n",[ToList,GetList]),
+		%% io:format("~p == ~p~n",[ToList,GetList]),
 		lists:sort(ToList) == lists:sort(GetList)
 	    end).
 
@@ -108,10 +108,12 @@ sym_dict() ->
 sym_dict(0) ->
     {'$call',ec_dictionary,new,[ec_gb_trees]};
 sym_dict(N) ->
-    frequency([
-	       {1, {'$call',ec_dictionary,remove,[integer(),dict(N-1)]}},
-	       {2, {'$call',ec_dictionary,add,[integer(),integer(),dict(N-1)]}}
-	       ]).
+    ?LAZY(
+       frequency([
+		  {1, {'$call',ec_dictionary,remove,[integer(),sym_dict(N-1)]}},
+		  {2, {'$call',ec_dictionary,add,[integer(),integer(),sym_dict(N-1)]}}
+		 ])
+      ).
 
 sym_dict2() ->
     ?SIZED(N,sym_dict2(N)).
@@ -119,7 +121,32 @@ sym_dict2() ->
 sym_dict2(0) ->
     {call,ec_dictionary,new,[ec_gb_trees]};
 sym_dict2(N) ->
+    D = dict(N-1),
     frequency([
-	       {1, {call,ec_dictionary,remove,[integer(),dict(N-1)]}},
-	       {2, {call,ec_dictionary,add,[integer(),integer(),dict(N-1)]}}
+	       {1, {call,ec_dictionary,remove,[integer(),D]}},
+	       {2, {call,ec_dictionary,add,[integer(),integer(),D]}}
 	       ]).
+
+hack_dict() ->
+    {call,?MODULE,create,my_hack()}.
+
+create([]) ->
+    	ec_dictionary:new(ec_gb_trees);	
+create(Ls) ->
+    lists:foldl(fun ({F,A},Acc) ->
+    			erlang:apply(ec_dictionary,F,A ++ [Acc])
+    		end,
+    		ec_dictionary:new(ec_gb_trees),
+    		Ls).
+
+my_hack() ->
+    list(my_op()).
+
+
+my_op() ->
+    oneof([{add,[integer(),integer()]},
+	   {remove,[integer()]}
+	  ]).
+
+
+%% Auto-ADT approach
