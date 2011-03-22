@@ -6,7 +6,6 @@
 	     ec_lists,
 	     ec_string,
 	     ec_semver,
-	     ec_implements,
 	     ec_dictionary,
 	     ec_gb_trees,
 	     ec_dict,
