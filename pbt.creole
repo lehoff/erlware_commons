@@ -1,3 +1,107 @@
-* test
-** test test
-* test
+= Property based testing for unit testers
+
+The purpose of the short document is to help people who are familiar
+with unit testing understand how property based testing (PBT) differs,
+but also where the thinking is the same. 
+
+This document focusses on the PBT tool PropEr for Erlang since that is
+what I am familiar with, but the general principles applies to all PBT
+tools regardless of which language they are written in. 
+
+The approach taken here is that we hear from people who are used to
+working with unit testing regarding how they think when designing
+their tests and how a concrete test might look. 
+ 
+These descriptions are then "converted" into the way it works with
+PBT, with a clear focus on what stays the same and what is different. 
+
+== Testing philosophies
+
+A quote from Martin Logan:
+
+{{{
+For me unit testing is about contracts. I think about the same things
+I think about when I write statements like {ok, Resp} =
+Mod:Func(Args). Unit testing and writing specs are very close for me.
+Hypothetically speaking lets say a function should return return {ok,
+string()} | {error, term()} for all given input parameters then my
+unit tests should be able to show that for a representative set of
+input parameters that those contracts are honored. The art comes in
+thinking about what that set is.
+}}}
+
+The trap in writing all your own tests can often be that we think
+about the set in terms of what we coded for and not what may indeed be
+asked of our function. As the code is tried in further exploratory
+testing and in production new input parameter sets for which the given
+function does not meet the stated contract are discovered and added to
+the test case once a fix has been put into place.    
+
+This is a very good description of what the ground rules for unit
+testing are: 
+
+* Checking that contracts are obeyed.
+* Creating a representative set of input parameters.
+
+The former is very much part of PBT - each property you write will
+check a contract, so that thinking is the same.  
+
+*Note:* the word property is used instead of test case since you the
+ property says something about your system in general and not just a
+ single run of things as with a test case. More on this right away! 
+
+What PBT does different is the input parameters. Instead of crafting a
+few off-the-top-of-your head input parameters you specify the rules
+for creating the input parameters and let your property based testing
+tool generate the input parameters. 
+
+The functions you write to specify the rules are called generators.
+
+Suppose you want to test a sorting function that takes a list of
+integers and returns the list sorted. 
+The generator for this would be a function that returns a list with a
+random number of elements, each of which is a random number.  
+
+One can argue that that sort of randomness can be applied to unit
+testing as well and indeed it can. It is just easier with a good PBT
+tool since it has facilities that allows you to state the above
+generator as: 
+
+{{{
+list(integer()) 
+}}}
+
+But it does not stop at generation of input parameters. If you have
+more complex tests where you have to generate a series of events and
+keep track of some state then your PBT tool will generate random
+sequences of events which corresponds to legal sequences of events and
+test that your system behaves correctly for all sequences. 
+
+So when you have written a property with associated generators you
+have in fact created something that can create numerous test cases -
+you just have to tell your PBT tool how many test cases you want to
+check the property on. 
+
+== Shrinking the bar 
+
+At this point you might still have the feeling that introducing the
+notion of some sort of generators to your unit testing tool of choice
+would bring you on par with PBT tools, but wait there is more to
+come. 
+
+When a PBT tool creates a test case that fails there is real chance
+that it has created a long test case or some big input parameters -
+trying to debug that is very much like receiving a humongous log from
+a system in the field and try to figure out what cause the system to
+fail. 
+
+Enter shrinking...
+
+When a test case fails the PBT tool will try to shrink the failing
+test case down to the essentials by stripping out input elements or
+events that does not cause the failure. In most cases this results in
+a very short counterexample that clearly states which events and
+inputs are required to break a property. 
+
+As we go through some concrete examples later the effects of shrinking
+will be shown. 
