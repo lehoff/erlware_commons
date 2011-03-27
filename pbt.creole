@@ -166,3 +166,204 @@ inputs are required to break a property.
 
 As we go through some concrete examples later the effects of shrinking
 will be shown. 
+
+Shrinking makes it a lot easier to debug problems and is as key to the
+strength of PBT as the generators.
+
+== Converting a unit test
+
+We will now take a look at one possible way of translating a unit
+test into a PBT setting.
+
+The example comes from Eric Merritt and is about the add/2 function in
+the ec_dictionary instance ec_gb_trees.
+
+The add function has the following spec:
+{{{
+-spec add(ec_dictionary:key(), ec_dictionary:value(), Object::dictionary()) ->
+    dictionary().
+}}}
+
+and it is supposed to do the obvious: add the key and value pair to
+the dictionary and return a new dictionary.
+
+Eric states his basic expectations as follows:
+# I can put arbitrary terms into the dictionary as keys
+# I can put arbitrary terms into the dictionary as values
+# When I put a value in the dictionary by a key, I can retrieve that same value
+# When I put a different value in the dictionary by key it does not change other key value pairs.
+# When I update a value the new value in available by the new key
+# When a value does not exist a not found exception is created
+
+The first two expectations regarding being able to use arbritrary
+terms as keys and values is a job for generators.
+
+The latter four are prime candidates for properties and we will create
+one for each of them.
+
+=== Generators
+
+{{{
+key() -> any().
+
+value() -> any().
+}}}
+
+For PropEr this approach has the drawback that creation and shrinking
+becomes rather time consuming, so it might be better to narrow to
+something like this:
+
+{{{
+key() -> union([integer(),atom()]).
+
+value() -> union([integer(),atom(),binary(),boolean(),string()]).
+}}}
+
+What is best depends on the situation and intended usage.
+
+Now, being able to generate keys and values is not enough. You also
+have to tell PropEr how to create a dictionary and in this case we
+will use a symbolic generator (detail to be explained later).
+
+{{{
+sym_dict() ->
+    ?SIZED(N,sym_dict(N)).
+    
+sym_dict(0) ->
+    {'$call',ec_dictionary,new,[ec_gb_trees]};
+sym_dict(N) ->
+    ?LAZY(
+       frequency([
+		  {1, {'$call',ec_dictionary,remove,[key(),sym_dict(N-1)]}},
+		  {2, {'$call',ec_dictionary,add,[value(),value(),sym_dict(N-1)]}}
+		 ])
+      ).
+}}}
+
+{{{sym_dict/0}}} uses the {{{?SIZED}}} macro to control the size of
+the generated dictionary. PropEr will start out with small numbers and
+gradually raise it.
+
+{{{sym_dict/1}}} is building a dictionary by randomly adding key/value
+pairs and removing keys. Eventually the base case is reached which
+will create an empty dictionary. 
+
+The {{{?LAZY}}} macro is used to defer the calculation of the
+{{{sym_dict(N-1)}} until they are needed and {{{frequency/1}}} is used
+to ensure that twice as many adds compared to removes are done. This
+should give rather more interesting dictionaries in the long run, if
+not one can alter the frequencies accondingly.
+
+But does it really work?
+
+That is a good question and one that should always be asked when
+looking at genetors. Fortunately there is a way to see what a
+generator produces provided that the generator functions are exported.
+
+Hint: in most cases it will not hurt to throw in a
+{{{-compile(export_all).}}} in the module used to specify the
+properties. And here we actually have a sub-hint: specify the
+properties in a separate file to avoid peeking inside the
+implementation! Base the test on the published API as this is what the
+users of the code will be restricted to.
+
+When the test module has been loaded you can test the generators by
+starting up an Erlang shell (this example uses the erlware_commons
+code so get yourself a clone to play with):
+
+{{{
+$ erl -pz ebin -pz test
+1> proper_gen:pick(ec_dictionary_proper:key()).
+{ok,4}
+2> proper_gen:pick(ec_dictionary_proper:key()).
+{ok,35}
+3> proper_gen:pick(ec_dictionary_proper:key()).
+{ok,-5}
+4> proper_gen:pick(ec_dictionary_proper:key()).
+{ok,48}
+5> proper_gen:pick(ec_dictionary_proper:key()).
+{ok,'\036\207_là´?\nc'}
+6> proper_gen:pick(ec_dictionary_proper:value()).
+{ok,2}
+7> proper_gen:pick(ec_dictionary_proper:value()).
+{ok,-14}
+8> proper_gen:pick(ec_dictionary_proper:value()).
+{ok,-3}
+9> proper_gen:pick(ec_dictionary_proper:value()).
+{ok,27}
+10> proper_gen:pick(ec_dictionary_proper:value()).
+{ok,-8}
+11> proper_gen:pick(ec_dictionary_proper:value()).
+{ok,[472765,17121]}
+12> proper_gen:pick(ec_dictionary_proper:value()).
+{ok,true}
+13> proper_gen:pick(ec_dictionary_proper:value()).
+{ok,<<>>}
+14> proper_gen:pick(ec_dictionary_proper:value()).
+{ok,<<89,69,18,148,32,42,238,101>>}
+15> proper_gen:pick(ec_dictionary_proper:sym_dict()).
+{ok,{'$call',ec_dictionary,add,
+        [[114776,1053475],
+         'fª\020\227\215',
+         {'$call',ec_dictionary,add,
+             ['',true,
+              {'$call',ec_dictionary,add,
+                  ['2^Ø¡',
+                   [900408,886056],
+                   {'$call',ec_dictionary,add,[[48618|...],<<...>>|...]}]}]}]}}
+16> proper_gen:pick(ec_dictionary_proper:sym_dict()).
+{ok,{'$call',ec_dictionary,add,
+        [10,'a¯\214\031fõC',
+         {'$call',ec_dictionary,add,
+             [false,-1,
+              {'$call',ec_dictionary,remove,
+                  ['d·ÉV÷[',
+                   {'$call',ec_dictionary,remove,[12,{'$call',...}]}]}]}]}}
+}}}
+
+That does not look too bad, so we will continue with that for now.
+ 
+
+=== Properties of {{{add/2}}}
+
+The first expectation Eric had about how the dictionary works was that
+if a key had been stored it could be retrieved.
+
+One way of expressing this could be with this property:
+
+{{{
+prop_get_after_add_returns_correct_value() ->
+    ?FORALL({Dict,K,V}, {sym_dict(),key(),value()},
+	    begin
+		try ec_dictionary:get(K,ec_dictionary:add(K,V,Dict)) of
+		    V ->
+			true;
+		    _ ->
+			false
+		catch
+		    _:_ ->
+			false
+		end
+	    end).
+}}}
+
+This property reads that for all dictionaries {{{get/2}}} using a key
+from a key/value pair just inserted using the {{{add/3}}} function
+will return that value. If that is not the case the property will
+evaluate to false.
+
+Running the property is done using {{{proper:quickcheck/1}}}:
+
+{{{
+proper:quickcheck(ec_dictionary_proper:prop_get_after_add_returns_correct_value()).
+....................................................................................................
+OK: Passed 100 test(s).
+true
+}}}
+
+This was as expected, but at this point we will take a little detour
+and introduce a mistake in the ec_gb_trees implementation and see how
+that works.
+
+
+
