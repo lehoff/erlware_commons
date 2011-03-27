@@ -41,7 +41,7 @@ prop_size_decrease_when_removing() ->
 	    end).
 
 prop_get_after_add_returns_correct_value() ->
-    ?FORALL({Dict,K,V}, {my_dict(),integer(),integer()},
+    ?FORALL({Dict,K,V}, {sym_dict(),key(),value()},
 	    begin
 		try ec_dictionary:get(K,ec_dictionary:add(K,V,Dict)) of
 		    V ->
@@ -87,6 +87,11 @@ prop_to_list_matches_get() ->
 %% Generators
 %%-----------------------------------------------------------------------------
 
+key() -> union([integer(),atom()]).
+
+value() -> union([integer(),atom(),binary(),boolean(),string()]).
+
+
 my_dict() ->
     ?SIZED(N,dict(N)).
 
@@ -110,8 +115,8 @@ sym_dict(0) ->
 sym_dict(N) ->
     ?LAZY(
        frequency([
-		  {1, {'$call',ec_dictionary,remove,[integer(),sym_dict(N-1)]}},
-		  {2, {'$call',ec_dictionary,add,[integer(),integer(),sym_dict(N-1)]}}
+		  {1, {'$call',ec_dictionary,remove,[key(),sym_dict(N-1)]}},
+		  {2, {'$call',ec_dictionary,add,[value(),value(),sym_dict(N-1)]}}
 		 ])
       ).
 
