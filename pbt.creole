@@ -1,5 +1,7 @@
 = Property based testing for unit testers
 
+Main contributors: Torben Hoffmann, Raghav Karol, Eric Merritt
+
 The purpose of the short document is to help people who are familiar
 with unit testing understand how property based testing (PBT) differs,
 but also where the thinking is the same. 
@@ -46,30 +48,89 @@ testing are:
 The former is very much part of PBT - each property you write will
 check a contract, so that thinking is the same.  
 
-*Note:* the word property is used instead of test case since you the
- property says something about your system in general and not just a
- single run of things as with a test case. More on this right away! 
+== xUnit vs PBT
 
-What PBT does different is the input parameters. Instead of crafting a
-few off-the-top-of-your head input parameters you specify the rules
-for creating the input parameters and let your property based testing
-tool generate the input parameters. 
+Unit testing has become popular for software testing with the advent
+of xUnit tools like jUnit for Java.  xUnit like tools typically
+provide a testing framework with the following functionality
 
-The functions you write to specify the rules are called generators.
+*    test fixture setup
+*    test case execution
+*    test fixture teardown
+*    test suite management
+*    test status reporting and management
 
-Suppose you want to test a sorting function that takes a list of
-integers and returns the list sorted. 
-The generator for this would be a function that returns a list with a
-random number of elements, each of which is a random number.  
+While xUnit tools provide a lot of functionality to execute and manage
+test cases and suites, reporting results there is no focus on test
+case execution step, while this is the main focus area of
+property-based testing (PBT). 
 
-One can argue that that sort of randomness can be applied to unit
-testing as well and indeed it can. It is just easier with a good PBT
-tool since it has facilities that allows you to state the above
-generator as: 
+Consider the following function specification
 
 {{{
-list(integer()) 
+sort(list::integer()) ---> list::integer() | error
 }}}
+
+A verbal specification of this function is,
+
+For all input lists of integers, the sort function returns a sorted
+list of integers. 
+
+For any other kind of argument the function returns the atom error.
+
+The specification above may be a requirement of how the function
+should behave or even how the function does behave. This distinction
+is important; the former is the requirement for the function, the
+latter is the actual API. Both should be the same and that is what our
+testing should confirm. Test cases for this function might look like 
+
+{{{
+assertEqual(sort([5,4,3,2,1]), [1,2,3,4,5])
+assertEqual(sort([1,2,3,4,5]), [1,2,3,4,5])
+assertEqual(sort([]         ), []         )
+assertEqual(sort([-1,0, 1]  ), [-1, 0, 1] )
+}}}
+
+How many tests cases should we write to be convinced that the actual
+behaviour of the function is the same as its specification? Clearly,
+it is impossible to write tests cases for all possible input values,
+here all lists of integers, the art of testing is finding individual
+input values that are representative of a large part of the input
+space. We hope that the test cases are exhaustive to cover the
+specification. xUnit tools offer no support for this and this is where
+PBT and PBT Tools like PropEr and QuickCheck come in. 
+
+PBT introduces testing with a large set of random input values and
+verifying that the specification holds for each input value
+selected. Functions used to generate input values, generators, are
+specified using rules and can be simply composed together to construct
+complicated values.  So, a property based test for the function above
+may look like: 
+
+{{{
+FOREACH({I, J, InputList},  {nat(), nat(), integer_list()},
+    SUCHTHAT(I < J andalso J < length(InputList),  
+    SortedList = sort(InputList)
+    length(SortedList) == length(InputList)
+    andalso
+    lists:get(SortedList, I) =< lists:get(SortedList, J))
+}}}
+
+The property above works as follows
+
+* Generate a random list of integers InputList and two natural numbers
+  I, J, such that I < J < size of InputList
+* Check that size of sorted and input lists is the same.
+* Check that element with smaller index I is less than or equal to
+element with larger index J in SortedList. 
+
+Notice in the property above, we //specify// property. Verification of
+the property based on random input values will be done by the property
+based tool, therefore we can generated a large number of tests cases
+with random input values and have a higher level of confidence that
+the function when using unit tests alone.   
+
+
 
 But it does not stop at generation of input parameters. If you have
 more complex tests where you have to generate a series of events and
