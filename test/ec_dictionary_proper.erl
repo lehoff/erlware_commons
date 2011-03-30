@@ -54,6 +54,26 @@ prop_get_after_add_returns_correct_value() ->
 		end
 	    end).
 
+prop_add_does_not_change_values_for_other_keys() ->
+    ?FORALL({Dict,K,V},  {sym_dict(),key(),value()},
+	    begin
+		Keys = ec_dictionary:keys(Dict),
+		?IMPLIES(not lists:member(K,Keys),
+			 begin
+			     Dict2 = ec_dictionary:add(K,V,Dict),
+			     try lists:all(fun(B) -> B end,
+					   [ ec_dictionary:get(Ka,Dict) == 
+						 ec_dictionary:get(Ka,Dict2) ||
+					       Ka <- Keys ]) of
+				 Bool -> Bool
+				 catch
+				     throw:not_found -> key_not_found
+				 end
+			 end)
+	    end).
+
+
+
 prop_key_is_present_after_add() ->    
     ?FORALL({Dict,K,V}, {my_dict(),integer(),integer()},
 	    begin
@@ -101,8 +121,9 @@ dict(0) ->
 dict(N) ->
     ?LET(D,dict(N-1),
 	 frequency([
-		    {1, ec_dictionary:remove(integer(),D)},
-		    {2, ec_dictionary:add(integer(),integer(),D)}
+		    {1, dict(0)},
+		    {3, ec_dictionary:remove(integer(),D)},
+		    {6, ec_dictionary:add(integer(),integer(),D)}
 		  ])).
 
 sym_dict() ->
@@ -115,8 +136,9 @@ sym_dict(0) ->
 sym_dict(N) ->
     ?LAZY(
        frequency([
-		  {1, {'$call',ec_dictionary,remove,[key(),sym_dict(N-1)]}},
-		  {2, {'$call',ec_dictionary,add,[value(),value(),sym_dict(N-1)]}}
+		  {1, sym_dict(0)},
+		  {3, {'$call',ec_dictionary,remove,[key(),sym_dict(N-1)]}},
+		  {6, {'$call',ec_dictionary,add,[value(),value(),sym_dict(N-1)]}}
 		 ])
       ).
 
