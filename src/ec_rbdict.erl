@@ -60,26 +60,28 @@
 -export([add/3, from_list/1, get/2, has_key/2,
 	 has_value/2, new/0, remove/2, size/1, to_list/1]).
 
+-export_type([dictionary/2]).
+
 %%%===================================================================
 %%% Types
 %%%===================================================================
 
--type color() :: r | b.
+-opaque dictionary(K, V) :: empty | {color(),
+				     dictionary(K, V),
+				     ec_dictionary:key(K),
+				     ec_dictionary:value(V),
+				     dictionary(K, V)}.
 
--opaque dictionary() :: empty | {color(),
-				 dictionary(),
-				 ec_dictionary:key(),
-				 ec_dictionary:value(),
-				 dictionary()}.
+-type color() :: r | b.
 
 %%%===================================================================
 %%% API
 %%%===================================================================
 
--spec new() -> dictionary().
+-spec new() -> dictionary(_K, _V).
 new() -> empty.
 
--spec has_key(ec_dictionary:key(), dictionary()) -> boolean().
+-spec has_key(ec_dictionary:key(K), dictionary(K, _V)) -> boolean().
 has_key(_, empty) ->
     false;
 has_key(K, {_, Left, K1, _, _}) when K < K1 ->
@@ -89,39 +91,44 @@ has_key(K, {_, _, K1, _, Right}) when K > K1 ->
 has_key(_, {_, _, _, _, _}) ->
     true.
 
--spec get(ec_dictionary:key(), dictionary()) -> ec_dictionary:value().
-get(_, empty) -> throw(not_found);
-get(K, {_, Left, K1, _, _}) when K < K1 -> get(K, Left);
+-spec get(ec_dictionary:key(K), dictionary(K, V)) -> ec_dictionary:value(V).
+get(_, empty) ->
+    throw(not_found);
+get(K, {_, Left, K1, _, _}) when K < K1 ->
+    get(K, Left);
 get(K, {_, _, K1, _, Right}) when K > K1 ->
     get(K, Right);
-get(_, {_, _, _, Val, _}) -> Val.
+get(_, {_, _, _, Val, _}) ->
+    Val.
 
--spec add(ec_dicitonary:key(), ec_dictionary:value(),
-	  dictionary()) -> dictionary().
+-spec add(ec_dicitonary:key(K), ec_dictionary:value(V),
+	  dictionary(K, V)) -> dictionary(K, V).
 add(Key, Value, Dict) ->
     {_, L, K1, V1, R} = add1(Key, Value, Dict),
     {b, L, K1, V1, R}.
 
--spec remove(ec_dictionary:key(), dictionary()) -> dictionary().
+-spec remove(ec_dictionary:key(K), dictionary(K, V)) -> dictionary(K, V).
 remove(Key, Dictionary) ->
     {Dict1, _} = erase_aux(Key, Dictionary), Dict1.
 
--spec has_value(ec_dictionary:value(), dictionary()) -> boolean().
+-spec has_value(ec_dictionary:value(V), dictionary(_K, V)) -> boolean().
 has_value(Value, Dict) ->
     fold(fun (_, NValue, _) when NValue == Value -> true;
 	     (_, _, Acc) -> Acc
 	 end,
 	 false, Dict).
 
--spec size(dictionary()) -> integer().
+-spec size(dictionary(_K, _V)) -> integer().
 size(T) ->
     size1(T).
 
--spec to_list(dictionary()) -> [{ec_dictionary:key(), ec_dictionary:value()}].
+-spec to_list(dictionary(K, V)) ->
+    [{ec_dictionary:key(K), ec_dictionary:value(V)}].
 to_list(T) ->
     to_list(T, []).
 
--spec from_list([{ec_dictionary:key(), ec_dictionary:value()}]) -> dictionary().
+-spec from_list([{ec_dictionary:key(K), ec_dictionary:value(V)}]) ->
+    dictionary(K, V).
 from_list(L) ->
     lists:foldl(fun ({K, V}, D) ->
 			add(K, V, D)
@@ -131,54 +138,69 @@ from_list(L) ->
 %%%===================================================================
 %%% Enternal functions
 %%%===================================================================
--spec erase_aux(ec_dictionary:key(), dictionary()) ->
-    {dictionary(), term()}.
-erase_aux(_, empty) -> {empty, false};
+-spec erase_aux(ec_dictionary:key(K), dictionary(K, V)) ->
+    {dictionary(K, V), boolean()}.
+erase_aux(_, empty) ->
+    {empty, false};
 erase_aux(K, {b, A, Xk, Xv, B}) ->
     if K < Xk ->
-	   {A1, Dec} = erase_aux(K, A),
-	   if Dec -> unbalright(b, A1, Xk, Xv, B);
-	      true -> {{b, A1, Xk, Xv, B}, false}
-	   end;
+	    {A1, Dec} = erase_aux(K, A),
+	    if Dec ->
+		    unbalright(b, A1, Xk, Xv, B);
+	       true ->
+		    {{b, A1, Xk, Xv, B}, false}
+	    end;
        K > Xk ->
-	   {B1, Dec} = erase_aux(K, B),
-	   if Dec -> unballeft(b, A, Xk, Xv, B1);
-	      true -> {{b, A, Xk, Xv, B1}, false}
-	   end;
+	    {B1, Dec} = erase_aux(K, B),
+	    if Dec ->
+		    unballeft(b, A, Xk, Xv, B1);
+	       true ->
+		    {{b, A, Xk, Xv, B1}, false}
+	    end;
        true ->
-	   case B of
-	     empty -> blackify(A);
-	     _ ->
-		 {B1, {Mk, Mv}, Dec} = erase_min(B),
-		 if Dec -> unballeft(b, A, Mk, Mv, B1);
-		    true -> {{b, A, Mk, Mv, B1}, false}
-		 end
-	   end
+	    case B of
+		empty ->
+		    blackify(A);
+		_ ->
+		    {B1, {Mk, Mv}, Dec} = erase_min(B),
+		    if Dec ->
+			    unballeft(b, A, Mk, Mv, B1);
+		       true ->
+			    {{b, A, Mk, Mv, B1}, false}
+		    end
+	    end
     end;
 erase_aux(K, {r, A, Xk, Xv, B}) ->
     if K < Xk ->
-	   {A1, Dec} = erase_aux(K, A),
-	   if Dec -> unbalright(r, A1, Xk, Xv, B);
-	      true -> {{r, A1, Xk, Xv, B}, false}
-	   end;
+	    {A1, Dec} = erase_aux(K, A),
+	    if Dec ->
+		    unbalright(r, A1, Xk, Xv, B);
+	       true ->
+		    {{r, A1, Xk, Xv, B}, false}
+	    end;
        K > Xk ->
-	   {B1, Dec} = erase_aux(K, B),
-	   if Dec -> unballeft(r, A, Xk, Xv, B1);
-	      true -> {{r, A, Xk, Xv, B1}, false}
-	   end;
+	    {B1, Dec} = erase_aux(K, B),
+	    if Dec ->
+		    unballeft(r, A, Xk, Xv, B1);
+	       true ->
+		    {{r, A, Xk, Xv, B1}, false}
+	    end;
        true ->
-	   case B of
-	     empty -> {A, false};
-	     _ ->
-		 {B1, {Mk, Mv}, Dec} = erase_min(B),
-		 if Dec -> unballeft(r, A, Mk, Mv, B1);
-		    true -> {{r, A, Mk, Mv, B1}, false}
-		 end
-	   end
+	    case B of
+		empty ->
+		    {A, false};
+		_ ->
+		    {B1, {Mk, Mv}, Dec} = erase_min(B),
+		    if Dec ->
+			    unballeft(r, A, Mk, Mv, B1);
+		       true ->
+			    {{r, A, Mk, Mv, B1}, false}
+		    end
+	    end
     end.
 
--spec erase_min(dictionary()) ->
-    {dictionary(), {ec_dictionary:key(), ec_dictionary:value()}, boolean}.
+-spec erase_min(dictionary(K, V)) ->
+    {dictionary(K, V), {ec_dictionary:key(K), ec_dictionary:value(V)}, boolean}.
 erase_min({b, empty, Xk, Xv, empty}) ->
     {empty, {Xk, Xv}, true};
 erase_min({b, empty, Xk, Xv, {r, A, Yk, Yv, B}}) ->
@@ -225,7 +247,7 @@ unbalright(b, A, Xk, Xv,
       D},
      false}.
 
--spec fold(fun(), dictionary(), dictionary()) -> dictionary().
+-spec fold(fun(), dictionary(K, V), dictionary(K, V)) -> dictionary(K, V).
 fold(_, Acc, empty) -> Acc;
 fold(F, Acc, {_, A, Xk, Xv, B}) ->
     fold(F, F(Xk, Xv, fold(F, Acc, B)), A).
@@ -245,10 +267,10 @@ to_list({_, A, Xk, Xv, B}, List) ->
     to_list(A, [{Xk, Xv} | to_list(B, List)]).
 
 %% Balance a tree afer (possibly) adding a node to the left/right.
--spec lbalance(color(), dictionary(),
-	       ec_dictinary:key(), ec_dictionary:value(),
-	       dictionary()) ->
-   dictionary().
+-spec lbalance(color(), dictionary(K, V),
+	       ec_dictinary:key(K), ec_dictionary:value(V),
+	       dictionary(K, V)) ->
+   dictionary(K, V).
 lbalance(b, {r, {r, A, Xk, Xv, B}, Yk, Yv, C}, Zk, Zv,
 	 D) ->
     {r, {b, A, Xk, Xv, B}, Yk, Yv, {b, C, Zk, Zv, D}};
@@ -257,10 +279,10 @@ lbalance(b, {r, A, Xk, Xv, {r, B, Yk, Yv, C}}, Zk, Zv,
     {r, {b, A, Xk, Xv, B}, Yk, Yv, {b, C, Zk, Zv, D}};
 lbalance(C, A, Xk, Xv, B) -> {C, A, Xk, Xv, B}.
 
--spec rbalance(color(), dictionary(),
-	       ec_dictinary:key(), ec_dictionary:value(),
-	       dictionary()) ->
-    dictionary().
+-spec rbalance(color(), dictionary(K, V),
+	       ec_dictinary:key(K), ec_dictionary:value(V),
+	       dictionary(K, V)) ->
+    dictionary(K, V).
 rbalance(b, A, Xk, Xv,
 	 {r, {r, B, Yk, Yv, C}, Zk, Zv, D}) ->
     {r, {b, A, Xk, Xv, B}, Yk, Yv, {b, C, Zk, Zv, D}};

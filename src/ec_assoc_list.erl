@@ -22,26 +22,28 @@
 	 to_list/1,
 	 from_list/1]).
 
--export_type([dictionary/0]).
+-export_type([dictionary/2]).
 
 %%%===================================================================
 %%% Types
 %%%===================================================================
--opaque dictionary() :: [{term(), term()}].
+-opaque dictionary(K, V) :: {ec_assoc_list,
+			     [{ec_dictionary:key(K), ec_dictionary:value(V)}]}.
 
 %%%===================================================================
 %%% API
 %%%===================================================================
 
--spec new() -> dictionary().
+-spec new() -> dictionary(_K, _V).
 new() ->
     {ec_assoc_list, []}.
 
--spec has_key(ec_dictionary:key(), Object::dictionary()) -> boolean().
+-spec has_key(ec_dictionary:key(K), Object::dictionary(K, _V)) -> boolean().
 has_key(Key, {ec_assoc_list, Data}) ->
     lists:keymember(Key, 1, Data).
 
--spec get(ec_dictionary:key(), Object::dictionary()) -> ec_dictionary:value().
+-spec get(ec_dictionary:key(K), Object::dictionary(K, V)) ->
+    ec_dictionary:value(V).
 get(Key, {ec_assoc_list, Data}) ->
     case lists:keyfind(Key, 1, Data) of
 	{Key, Value} ->
@@ -50,30 +52,31 @@ get(Key, {ec_assoc_list, Data}) ->
 	    throw(not_found)
     end.
 
--spec add(ec_dictionary:key(), ec_dictionary:value(), Object::dictionary()) ->
-    dictionary().
+-spec add(ec_dictionary:key(K), ec_dictionary:value(V),
+	  Object::dictionary(K, V)) ->
+    dictionary(K, V).
 add(Key, Value, {ec_assoc_list, Data}) ->
     {ec_assoc_list, [{Key, Value} | Data]}.
 
--spec remove(ec_dictionary:key(), Object::dictionary()) ->
-    dictionary().
+-spec remove(ec_dictionary:key(K), Object::dictionary(K, _V)) ->
+    dictionary(K, _V).
 remove(Key, {ec_assoc_list, Data}) ->
     {ec_assoc_list, lists:keydelete(Key, 1, Data)}.
 
--spec has_value(ec_dictionary:value(), Object::dictionary()) -> boolean().
+-spec has_value(ec_dictionary:value(V), Object::dictionary(_K, V)) -> boolean().
 has_value(Value, {ec_assoc_list, Data}) ->
     lists:keymember(Value, 2, Data).
 
--spec size(Object::dictionary()) -> integer().
+-spec size(Object::dictionary(_K, _V)) -> integer().
 size({ec_assoc_list, Data}) ->
     length(Data).
 
--spec to_list(dictionary()) -> [{ec_dictionary:key(),
-				 ec_dictionary:value()}].
+-spec to_list(dictionary(K, V)) -> [{ec_dictionary:key(K),
+				     ec_dictionary:value(V)}].
 to_list({ec_assoc_list, Data}) ->
    Data.
 
--spec from_list([{ec_dictionary:key(), ec_dictionary:value()}]) ->
-    dictionary().
+-spec from_list([{ec_dictionary:key(K), ec_dictionary:value(V)}]) ->
+    dictionary(K, V).
 from_list(List) when is_list(List) ->
     {ec_assoc_list, List}.

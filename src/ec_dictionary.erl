@@ -27,9 +27,9 @@
 
 
 
--export_type([dictionary/0,
-	      key/0,
-	      value/0]).
+-export_type([dictionary/2,
+	      key/1,
+	      value/1]).
 
 %%%===================================================================
 %%% Types
@@ -39,9 +39,9 @@
 	{callback,
 	  data}).
 
--opaque dictionary() :: #dict_t{}.
--type key() :: term().
--type value() :: term().
+-opaque dictionary(_K, _V) :: #dict_t{}.
+-type key(T) :: T.
+-type value(T) :: T.
 
 %%%===================================================================
 %%% API
@@ -66,7 +66,7 @@ behaviour_info(_) ->
 %% module should implement the dictionary behaviour.
 %%
 %% @param ModuleName The module name.
--spec new(module()) -> dictionary().
+-spec new(module()) -> dictionary(_K, _V).
 new(ModuleName) when is_atom(ModuleName) ->
     #dict_t{callback = ModuleName, data = ModuleName:new()}.
 
@@ -74,7 +74,7 @@ new(ModuleName) when is_atom(ModuleName) ->
 %%
 %% @param Dict The dictory object to check
 %% @param Key The key to check the dictionary for
--spec has_key(key(), dictionary()) -> boolean().
+-spec has_key(key(K), dictionary(K, _V)) -> boolean().
 has_key(Key, #dict_t{callback = Mod, data = Data}) ->
     Mod:has_key(Key, Data).
 
@@ -84,7 +84,7 @@ has_key(Key, #dict_t{callback = Mod, data = Data}) ->
 %% @param Dict The dictionary object to return the value from
 %% @param Key The key requested
 %% @throws not_found when the key does not exist
--spec get(key(), dictionary()) -> value().
+-spec get(key(K), dictionary(K, V)) -> value(V).
 get(Key, #dict_t{callback = Mod, data = Data}) ->
     Mod:get(Key, Data).
 
@@ -94,7 +94,7 @@ get(Key, #dict_t{callback = Mod, data = Data}) ->
 %% @param Dict the dictionary object to add too
 %% @param Key the key to add
 %% @param Value the value to add
--spec add(key(), value(), dictionary()) -> dictionary().
+-spec add(key(K), value(V), dictionary(K, V)) -> dictionary(K, V).
 add(Key, Value, #dict_t{callback = Mod, data = Data} = Dict) ->
     Dict#dict_t{data = Mod:add(Key, Value, Data)}.
 
@@ -103,7 +103,7 @@ add(Key, Value, #dict_t{callback = Mod, data = Data} = Dict) ->
 %%
 %% @param Dict the dictionary object to remove the value from
 %% @param Key the key of the key/value pair to remove
--spec remove(key(), dictionary()) -> dictionary().
+-spec remove(key(K), dictionary(K, V)) -> dictionary(K, V).
 remove(Key, #dict_t{callback = Mod, data = Data} = Dict) ->
     Dict#dict_t{data = Mod:remove(Key, Data)}.
 
@@ -111,14 +111,14 @@ remove(Key, #dict_t{callback = Mod, data = Data} = Dict) ->
 %%
 %% @param Dict the dictionary object to check
 %% @param Value The value to check if exists
--spec has_value(value(), dictionary()) -> boolean().
+-spec has_value(value(V), dictionary(_K, V)) -> boolean().
 has_value(Value, #dict_t{callback = Mod, data = Data}) ->
     Mod:has_value(Value, Data).
 
 %% @doc return the current number of key value pairs in the dictionary
 %%
 %% @param Dict the object return the size for.
--spec size(dictionary()) -> integer().
+-spec size(dictionary(_K, _V)) -> integer().
 size(#dict_t{callback = Mod, data = Data}) ->
     Mod:size(Data).
 
@@ -126,7 +126,7 @@ size(#dict_t{callback = Mod, data = Data}) ->
 %% pairs.
 %%
 %% @param Dict the base dictionary to make use of.
--spec to_list(Dict::dictionary()) -> [{key(), value()}].
+-spec to_list(Dict::dictionary(K, V)) -> [{key(K), value(V)}].
 to_list(#dict_t{callback = Mod, data = Data}) ->
     Mod:to_list(Data).
 
@@ -135,7 +135,7 @@ to_list(#dict_t{callback = Mod, data = Data}) ->
 %%
 %% @param ModuleName the type to create the dictionary from
 %% @param List The list of key value pairs to start with
--spec from_list(module(), [{key(), value()}]) -> dictionary().
+-spec from_list(module(), [{key(K), value(V)}]) -> dictionary(K, V).
 from_list(ModuleName, List) when is_list(List) ->
     #dict_t{callback = ModuleName, data = ModuleName:from_list(List)}.
 
