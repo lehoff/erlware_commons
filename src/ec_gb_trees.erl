@@ -21,7 +21,8 @@
 	 has_value/2,
 	 size/1,
 	 to_list/1,
-	 from_list/1]).
+	 from_list/1,
+	 keys/1]).
 
 -export_type([dictionary/2]).
 
@@ -127,6 +128,11 @@ from_list(List) when is_list(List) ->
 		end,
 		gb_trees:empty(),
 		List).
+
+-spec keys(dictionary(K,_V)) -> [ec_dictionary:key(K)].
+keys(Data) ->
+    gb_trees:keys(Data).
+		  
 
 %%%===================================================================
 %%% Tests

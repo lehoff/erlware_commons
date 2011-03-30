@@ -23,7 +23,8 @@
 	 has_value/2,
 	 size/1,
 	 to_list/1,
-	 from_list/2]).
+	 from_list/2,
+	 keys/1]).
 
 
 
@@ -139,3 +140,9 @@ to_list(#dict_t{callback = Mod, data = Data}) ->
 from_list(ModuleName, List) when is_list(List) ->
     #dict_t{callback = ModuleName, data = ModuleName:from_list(List)}.
 
+%% @doc Return the keys of this dictionary as a list 
+%%
+%% @param Dict the base dictionary to make use of.
+-spec keys(Dict::dictionary(K, _V)) -> [key(K)].
+keys(#dict_t{callback = Mod, data = Data}) ->
+    Mod:keys(Data).
