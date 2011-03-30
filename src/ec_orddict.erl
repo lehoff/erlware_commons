@@ -24,24 +24,27 @@
 	 to_list/1,
 	 from_list/1]).
 
+-export_type([dictionary/2]).
+
 %%%===================================================================
 %%% Types
 %%%===================================================================
--opaque dictionary() :: orddict:dictionary().
+-opaque dictionary(K, V) :: [{K, V}].
 
 %%%===================================================================
 %%% API
 %%%===================================================================
 
--spec new() -> dictionary().
+-spec new() -> dictionary(_K, _V).
 new() ->
     orddict:new().
 
--spec has_key(ec_dictionary:key(), Object::dictionary()) -> boolean().
+-spec has_key(ec_dictionary:key(K), Object::dictionary(K, _V)) -> boolean().
 has_key(Key, Data) ->
     orddict:is_key(Key, Data).
 
--spec get(ec_dictionary:key(), Object::dictionary()) -> ec_dictionary:value().
+-spec get(ec_dictionary:key(K), Object::dictionary(K, V)) ->
+    ec_dictionary:value(V).
 get(Key, Data) ->
     case orddict:find(Key, Data) of
 	{ok, Value} ->
@@ -50,17 +53,18 @@ get(Key, Data) ->
 	    throw(not_found)
     end.
 
--spec add(ec_dictionary:key(), ec_dictionary:value(), Object::dictionary()) ->
-    dictionary().
+-spec add(ec_dictionary:key(K), ec_dictionary:value(V),
+	  Object::dictionary(K, V)) ->
+    dictionary(K, V).
 add(Key, Value, Data) ->
     orddict:store(Key, Value, Data).
 
--spec remove(ec_dictionary:key(), Object::dictionary()) ->
-    dictionary().
+-spec remove(ec_dictionary:key(K), Object::dictionary(K, V)) ->
+    dictionary(K, V).
 remove(Key, Data) ->
     orddict:erase(Key, Data).
 
--spec has_value(ec_dictionary:value(), Object::dictionary()) -> boolean().
+-spec has_value(ec_dictionary:value(V), Object::dictionary(_K, V)) -> boolean().
 has_value(Value, Data) ->
     orddict:fold(fun(_, NValue, _) when NValue == Value ->
 		      true;
@@ -70,14 +74,16 @@ has_value(Value, Data) ->
 	      false,
 	      Data).
 
--spec size(Object::dictionary()) -> integer().
+-spec size(Object::dictionary(_K, _V)) -> integer().
 size(Data) ->
     orddict:size(Data).
 
--spec to_list(dictionary()) -> [{ec_dictionary:key(), ec_dictionary:value()}].
+-spec to_list(dictionary(K, V)) ->
+    [{ec_dictionary:key(K), ec_dictionary:value(V)}].
 to_list(Data) ->
     orddict:to_list(Data).
 
--spec from_list([{ec_dictionary:key(), ec_dictionary:value()}]) -> dictionary().
+-spec from_list([{ec_dictionary:key(K), ec_dictionary:value(V)}]) ->
+    dictionary(K, V).
 from_list(List) when is_list(List) ->
     orddict:from_list(List).
