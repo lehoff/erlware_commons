@@ -58,7 +58,8 @@
 
 %% Standard interface.
 -export([add/3, from_list/1, get/2, has_key/2,
-	 has_value/2, new/0, remove/2, size/1, to_list/1]).
+	 has_value/2, new/0, remove/2, size/1, to_list/1,
+	 keys/1]).
 
 -export_type([dictionary/2]).
 
@@ -135,9 +136,21 @@ from_list(L) ->
 		end, new(),
 		L).
 
+-spec keys(dictionary(K, _V)) -> [ec_dictionary:key(K)].
+keys(Dict) ->
+    keys(Dict, []).
+
 %%%===================================================================
 %%% Enternal functions
 %%%===================================================================
+-spec keys(dictionary(K, _V), [ec_dictionary:key(K)]) ->
+    [ec_dictionary:key(K)].
+keys(empty, Tail) ->
+    Tail;
+keys({_, L, K, _, R}, Tail) ->
+    keys(L, [K | keys(R, Tail)]).
+
+
 -spec erase_aux(ec_dictionary:key(K), dictionary(K, V)) ->
     {dictionary(K, V), boolean()}.
 erase_aux(_, empty) ->

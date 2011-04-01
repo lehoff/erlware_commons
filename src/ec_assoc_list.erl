@@ -20,7 +20,8 @@
 	 has_value/2,
 	 size/1,
 	 to_list/1,
-	 from_list/1]).
+	 from_list/1,
+	 keys/1]).
 
 -export_type([dictionary/2]).
 
@@ -80,3 +81,9 @@ to_list({ec_assoc_list, Data}) ->
     dictionary(K, V).
 from_list(List) when is_list(List) ->
     {ec_assoc_list, List}.
+
+-spec keys(dictionary(K, _V)) -> [ec_dictionary:key(K)].
+keys({ec_assoc_list, Data}) ->
+    list:map(fun({Key, _Value}) ->
+		     Key
+	     end, Data).
