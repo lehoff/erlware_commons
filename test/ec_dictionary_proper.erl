@@ -1,4 +1,4 @@
-%% compile with 
+%% compile with
 %% erl -pz ebin --make
 %% start test with
 %%   erl -pz ebin -pz test
@@ -67,19 +67,19 @@ prop_add_does_not_change_values_for_other_keys() ->
 					       Ka <- Keys ]) of
 				 Bool -> Bool
 				 catch
-				     throw:not_found -> key_not_found
+				     throw:not_found -> true
 				 end
 			 end)
 	    end).
 
 
 
-prop_key_is_present_after_add() ->    
+prop_key_is_present_after_add() ->
     ?FORALL({Dict,K,V}, {my_dict(),integer(),integer()},
 	    begin
 		ec_dictionary:has_key(K,ec_dictionary:add(K,V,Dict))	    end).
 
-prop_value_is_present_after_add() ->    
+prop_value_is_present_after_add() ->
     ?FORALL({Dict,K,V}, {my_dict(),integer(),integer()},
 	    begin
 		ec_dictionary:has_value(V,ec_dictionary:add(K,V,Dict))
@@ -92,7 +92,7 @@ prop_to_list_matches_get() ->
 		%% io:format("SymDict: ~p~n",[proper_symb:symbolic_seq(SymDict)]),
 		ToList = ec_dictionary:to_list(Dict),
 		%% io:format("ToList:~p~n",[ToList]),
-		GetList = 
+		GetList =
 		    try [ {K,ec_dictionary:get(K,Dict)} || {K,_V} <- ToList ] of
 			List -> List
 		    catch
@@ -100,6 +100,17 @@ prop_to_list_matches_get() ->
 		    end,
 		%% io:format("~p == ~p~n",[ToList,GetList]),
 		lists:sort(ToList) == lists:sort(GetList)
+	    end).
+
+prop_value_changes_after_update() ->
+    ?FORALL({Dict, K1, V1, V2},
+	    {sym_dict(),
+	     key(), value(), value()},
+	    begin
+		Dict1 = ec_dictionary:add(K1, V1, Dict),
+		Dict2 = ec_dictionary:add(K1, V2, Dict1),
+		V1 == ec_dictionary:get(K1, Dict1) andalso
+		    V2 == ec_dictionary:get(K1, Dict2)
 	    end).
 
 
@@ -128,7 +139,7 @@ dict(N) ->
 
 sym_dict() ->
     ?SIZED(N,sym_dict(N)).
-    
+
 %% This symbolic generator will create a random instance of a ec_dictionary
 %% that will be used in the properties.
 sym_dict(0) ->
@@ -158,7 +169,7 @@ hack_dict() ->
     {call,?MODULE,create,my_hack()}.
 
 create([]) ->
-    	ec_dictionary:new(ec_gb_trees);	
+    	ec_dictionary:new(ec_gb_trees);
 create(Ls) ->
     lists:foldl(fun ({F,A},Acc) ->
     			erlang:apply(ec_dictionary,F,A ++ [Acc])

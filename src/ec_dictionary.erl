@@ -59,7 +59,8 @@ behaviour_info(callbacks) ->
      {has_value, 2},
      {size, 1},
      {to_list, 1},
-     {from_list, 1}];
+     {from_list, 1},
+     {keys, 1}];
 behaviour_info(_) ->
     undefined.
 
