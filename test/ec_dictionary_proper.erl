@@ -186,5 +186,13 @@ my_op() ->
 	   {remove,[integer()]}
 	  ]).
 
+gb_tree() ->
+    ?SIZED(N,gb_tree(N)).
+
+gb_tree(0) ->
+    gb_trees:empty();
+gb_tree(N) ->
+    gb_trees:enter(key(),value(),gb_tree(N-1)).
+
 
 %% Auto-ADT approach
