@@ -67,7 +67,7 @@ prop_add_does_not_change_values_for_other_keys() ->
 					       Ka <- Keys ]) of
 				 Bool -> Bool
 				 catch
-				     throw:not_found -> key_not_found
+				     throw:not_found -> true
 				 end
 			 end)
 	    end).
@@ -104,13 +104,13 @@ prop_to_list_matches_get() ->
 
 prop_value_changes_after_update() ->
     ?FORALL({Dict, K1, V1, V2},
-	    {sym_dict(100),
+	    {sym_dict(),
 	     key(), value(), value()},
 	    begin
 		Dict1 = ec_dictionary:add(K1, V1, Dict),
-		V1 = ec_dictionary:get(K1, Dict1),
 		Dict2 = ec_dictionary:add(K1, V2, Dict1),
-		V2 == ec_dictionary:get(K1, Dict2)
+		V1 == ec_dictionary:get(K1, Dict1) andalso
+		    V2 == ec_dictionary:get(K1, Dict2)
 	    end).
 
 
