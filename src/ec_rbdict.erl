@@ -56,6 +56,8 @@
 %%%-------------------------------------------------------------------
 -module(ec_rbdict).
 
+-behaviour(ec_dictionary).
+
 %% Standard interface.
 -export([add/3, from_list/1, get/2, has_key/2,
 	 has_value/2, new/0, remove/2, size/1, to_list/1,

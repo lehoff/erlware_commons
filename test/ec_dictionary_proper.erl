@@ -17,7 +17,7 @@
 %%------------------------------------------------------------------------------
 
 prop_size_increases_with_new_key() ->
-    ?FORALL({Dict,K}, {my_dict(),integer()},
+    ?FORALL({Dict,K}, {sym_dict(),integer()},
 	    begin
 		Size = ec_dictionary:size(Dict),
 		case ec_dictionary:has_key(K,Dict) of
@@ -29,7 +29,7 @@ prop_size_increases_with_new_key() ->
 	    end).
 
 prop_size_decrease_when_removing() ->
-    ?FORALL({Dict,K}, {my_dict(),integer()},
+    ?FORALL({Dict,K}, {sym_dict(),integer()},
 	    begin
 		Size = ec_dictionary:size(Dict),
 		case ec_dictionary:has_key(K,Dict) of
@@ -66,21 +66,21 @@ prop_add_does_not_change_values_for_other_keys() ->
 						 ec_dictionary:get(Ka,Dict2) ||
 					       Ka <- Keys ]) of
 				 Bool -> Bool
-				 catch
-				     throw:not_found -> true
-				 end
+			     catch
+				 throw:not_found -> true
+			     end
 			 end)
 	    end).
 
 
 
 prop_key_is_present_after_add() ->
-    ?FORALL({Dict,K,V}, {my_dict(),integer(),integer()},
+    ?FORALL({Dict,K,V}, {sym_dict(),integer(),integer()},
 	    begin
 		ec_dictionary:has_key(K,ec_dictionary:add(K,V,Dict))	    end).
 
 prop_value_is_present_after_add() ->
-    ?FORALL({Dict,K,V}, {my_dict(),integer(),integer()},
+    ?FORALL({Dict,K,V}, {sym_dict(),integer(),integer()},
 	    begin
 		ec_dictionary:has_value(V,ec_dictionary:add(K,V,Dict))
 	    end).
@@ -143,7 +143,8 @@ sym_dict() ->
 %% This symbolic generator will create a random instance of a ec_dictionary
 %% that will be used in the properties.
 sym_dict(0) ->
-    {'$call',ec_dictionary,new,[ec_gb_trees]};
+    ?LET(Dict,dictionary(),
+	 {'$call',ec_dictionary,new,[Dict]});
 sym_dict(N) ->
     ?LAZY(
        frequency([
@@ -152,6 +153,9 @@ sym_dict(N) ->
 		  {6, {'$call',ec_dictionary,add,[value(),value(),sym_dict(N-1)]}}
 		 ])
       ).
+
+dictionary() ->
+    union([ec_gb_trees,ec_assoc_list,ec_dict,ec_orddict]).
 
 sym_dict2() ->
     ?SIZED(N,sym_dict2(N)).
@@ -165,27 +169,8 @@ sym_dict2(N) ->
 	       {2, {call,ec_dictionary,add,[integer(),integer(),D]}}
 	       ]).
 
-hack_dict() ->
-    {call,?MODULE,create,my_hack()}.
 
-create([]) ->
-    	ec_dictionary:new(ec_gb_trees);
-create(Ls) ->
-    lists:foldl(fun ({F,A},Acc) ->
-    			erlang:apply(ec_dictionary,F,A ++ [Acc])
-    		end,
-    		ec_dictionary:new(ec_gb_trees),
-    		Ls).
-
-my_hack() ->
-    list(my_op()).
-
-
-my_op() ->
-    oneof([{add,[integer(),integer()]},
-	   {remove,[integer()]}
-	  ]).
-
+%% For the tutorial.
 gb_tree() ->
     ?SIZED(N,gb_tree(N)).
 
@@ -194,5 +179,3 @@ gb_tree(0) ->
 gb_tree(N) ->
     gb_trees:enter(key(),value(),gb_tree(N-1)).
 
-
-%% Auto-ADT approach

@@ -56,8 +56,9 @@ get(Key, {ec_assoc_list, Data}) ->
 -spec add(ec_dictionary:key(K), ec_dictionary:value(V),
 	  Object::dictionary(K, V)) ->
     dictionary(K, V).
-add(Key, Value, {ec_assoc_list, Data}) ->
-    {ec_assoc_list, [{Key, Value} | Data]}.
+add(Key, Value, {ec_assoc_list, _Data}=Dict) ->
+    {ec_assoc_list, Rest} = remove(Key,Dict),
+    {ec_assoc_list, [{Key, Value} | Rest ]}.
 
 -spec remove(ec_dictionary:key(K), Object::dictionary(K, _V)) ->
     dictionary(K, _V).
@@ -84,6 +85,6 @@ from_list(List) when is_list(List) ->
 
 -spec keys(dictionary(K, _V)) -> [ec_dictionary:key(K)].
 keys({ec_assoc_list, Data}) ->
-    list:map(fun({Key, _Value}) ->
+    lists:map(fun({Key, _Value}) ->
 		     Key
 	     end, Data).
