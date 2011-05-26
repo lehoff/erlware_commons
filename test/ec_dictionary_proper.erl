@@ -113,6 +113,34 @@ prop_value_changes_after_update() ->
 		    V2 == ec_dictionary:get(K1, Dict2)
 	    end).
 
+prop_remove_removes_only_one_key() ->
+    ?FORALL({Dict,K},
+	    {sym_dict(),key()},
+	    begin
+		{KeyGone,Dict2} = case ec_dictionary:has_key(K,Dict) of
+				      true ->
+					  D2 = ec_dictionary:remove(K,Dict),
+					  {ec_dictionary:has_key(K,D2) == false,
+					   D2};
+				      false ->
+					  {true,ec_dictionary:remove(K,Dict)}
+				  end,
+		OtherEntries = [ KV || {K1,_} = KV <- ec_dictionary:to_list(Dict),
+				       K1 /= K ],
+		KeyGone andalso 
+		    lists:sort(OtherEntries) == lists:sort(ec_dictionary:to_list(Dict2))
+	    end).
+
+prop_from_list() ->
+    ?FORALL({Dict,DictType},
+	    {sym_dict(),dictionary()},
+	    begin
+		List = ec_dictionary:to_list(Dict),
+		D2 = ec_dictionary:from_list(DictType,List),
+		List2 = ec_dictionary:to_list(D2),
+		lists:sort(List) == lists:sort(List2)
+	    end).
+	    
 
 %%-----------------------------------------------------------------------------
 %% Generators
