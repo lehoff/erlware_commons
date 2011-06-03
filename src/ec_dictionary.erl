@@ -1,10 +1,9 @@
 %%%-------------------------------------------------------------------
 %%% @author Eric Merritt <ericbmerritt@gmail.com>
 %%% @copyright 2011 Erlware, LLC.
-%%%
 %%% @doc
-%%% A module that supports association of keys to values. A map cannot
-%%% contain duplicate keys; each key can map to at most one value.
+%%%  A module that supports association of keys to values. A map cannot
+%%%  contain duplicate keys; each key can map to at most one value.
 %%%
 %%%  This interface is a member of the Erlware Commons Library.
 %%% @end
@@ -25,8 +24,6 @@
 	 to_list/1,
 	 from_list/2,
 	 keys/1]).
-
-
 
 -export_type([dictionary/2,
 	      key/1,
@@ -141,7 +138,7 @@ to_list(#dict_t{callback = Mod, data = Data}) ->
 from_list(ModuleName, List) when is_list(List) ->
     #dict_t{callback = ModuleName, data = ModuleName:from_list(List)}.
 
-%% @doc Return the keys of this dictionary as a list 
+%% @doc Return the keys of this dictionary as a list
 %%
 %% @param Dict the base dictionary to make use of.
 -spec keys(Dict::dictionary(K, _V)) -> [key(K)].

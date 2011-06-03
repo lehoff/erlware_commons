@@ -132,7 +132,6 @@ from_list(List) when is_list(List) ->
 -spec keys(dictionary(K,_V)) -> [ec_dictionary:key(K)].
 keys(Data) ->
     gb_trees:keys(Data).
-		  
 
 %%%===================================================================
 %%% Tests

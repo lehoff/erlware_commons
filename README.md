@@ -1,5 +1,6 @@
 Erlware Commons
 ===============
+[[f1oobar]]
 
 Erlware commons can best be described as an extension to the
 [stdlib application](http://www.erlang.org/doc/apps/stdlib/index.html)
@@ -20,6 +21,8 @@ useful.
 
 How To Use the Code
 -------------------
+fubarzzz
+
 
 In general the [erldocs](http://erlware.github.com/erlware_commons)
 well describe how to use each module in the application. There is some
