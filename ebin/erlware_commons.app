@@ -7,7 +7,8 @@
 	     ec_plists,
 	     ec_file,
 	     ec_string,
-	     ec_semver
-	    ]},
+	     ec_semver,
+	     ec_dictionary,
+	     ec_assoc_list]},
   {registered, []},
   {applications, [kernel, stdlib]}]}.
