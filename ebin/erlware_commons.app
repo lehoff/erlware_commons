@@ -8,6 +8,7 @@
 	     ec_semver,
 	     ec_dictionary,
 	     ec_assoc_list,
-	     ec_dict]},
+	     ec_dict,
+	     ec_gb_trees]},
   {registered, []},
   {applications, [kernel, stdlib]}]}.
