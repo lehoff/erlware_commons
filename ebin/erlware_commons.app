@@ -7,6 +7,7 @@
 	     ec_string,
 	     ec_semver,
 	     ec_dictionary,
-	     ec_assoc_list]},
+	     ec_assoc_list,
+	     ec_dict]},
   {registered, []},
   {applications, [kernel, stdlib]}]}.
