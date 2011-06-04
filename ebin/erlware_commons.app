@@ -12,6 +12,7 @@
 	     ec_assoc_list,
 	     ec_dict,
 	     ec_gb_trees,
-	     ec_rbdict]},
+	     ec_rbdict,
+	     ec_orddict]},
   {registered, []},
   {applications, [kernel, stdlib]}]}.
