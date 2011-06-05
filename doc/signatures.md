@@ -40,13 +40,18 @@ pass the Module name to the calling functions along with the data that
 it is going to be called on.
 
     :::erlang
-    some_fun_doing_something(ModuleToUse, DictData) ->
-        ModuleToUse:add(some_key, some_value, DictData).
+    add(ModuleToUse, Key, Value, DictData) ->
+        ModuleToUse:add(Key, Value, DictData).
 
 This works, and you can vary how you want to pass the data. For
 example, you could easily use a tuple to contain the data. That is,
 you could pass in `{ModuleToUse, DictData}` and that would make it a
-bit cleaner. There are a few problems with this approach. One of the
+bit cleaner. 
+    :::erlang
+    add(Key, Value, {ModuleToUse, DictData}) ->
+        ModuleToUse:add(Key, Value, DictData).        
+
+Either way, there are a few problems with this approach. One of the
 biggest is that you lose code locality, by looking at this bit of code
 you don't know what `ModuleToUse` is at all. You would need to follow
 the call chain up to figure out what it is. Also it may not be obvious
@@ -71,23 +76,24 @@ name.
 So what we actually want to do is something mole like this:
 
     :::erlang
-    some_fun_doing_something(DictData) ->
-        dictionary:add(some_key, some_value, DictData).
+    add(Key, Value, DictData) ->
+        dictionary:add(Key, Value, DictData).
 
 Doing this we retain the locality. We can easily look up the
 `dictionary` Module. We immediately have a good idea what a
 `dictionary` actually is and we know what functions we are
 calling. Also, all the tools know what a `dictionary` is as well and
-how to check that your code is calling it correctly. For all fo these
+how to check that your code is calling it correctly. For all of these
 reasons, this is a much better approach to the problem. This is what
 *Signatures* are all about.
 
 Signatures
 ----------
 
-How do we actually do this? The first thing we need to do is to define
-a
-[Behaviour](http://metajack.im/2008/10/29/custom-behaviors-in-erlang/)
+How do we actually do this in Erlang now that Erlang is missing what Java, SML and friends has built in? 
+
+The first thing we need to do is to define
+a [Behaviour](http://metajack.im/2008/10/29/custom-behaviors-in-erlang/)
 for our functionality. To continue our example we will define a
 Behaviour for dictionaries. That Behaviour looks like this:
 
@@ -116,7 +122,7 @@ yet. It will make sure that any dictionaries we write will have all
 the functions they need to have, but it wont help use actually use the
 dictionaries in an abstract way in our code. To do that we need to add
 a bit of functionality. We do that by actually implementing our own
-behaviour, starting with new.
+behaviour, starting with `new/1`.
 
     :::erlang
     %% @doc create a new dictionary object from the specified module. The
@@ -135,7 +141,7 @@ data. here in the record. We call the module name named in
 `ModuleName` to create the initial data. We then construct the record
 and return that record to the caller and we have a new
 dictionary. What about the other functions, the ones that don't create
-a dictionary but make use of it. lets take a look at the
+a dictionary but make use of it. Let's take a look at the
 implementations of two kinds of functions, one that updates the
 dictionary and another that just retrieves data.
 
@@ -153,13 +159,16 @@ adding a value.
     add(Key, Value, #dict_t{callback = Mod, data = Data} = Dict) ->
         Dict#dict_t{data = Mod:add(Key, Value, Data)}.
 
-There are two key things here. The first is the fact that the
-dictionary is deconstructed so we can get access to the data and the
-callback module. The second is that we modify the dictionary record we
-the new data and return that modified record. This is the same
-approach that you will use for any Signature that updates data. As a
-side note, notice that we are calling the concrete implementation to
-do the work itself.
+There are two key things here. 
+
+1. The dictionary is deconstructed so we can get access to the data
+and the callback module.
+1. We modify the dictionary record we the new data and return that
+modified record.
+
+This is the same approach that you will use for any Signature that
+updates data. As a side note, notice that we are calling the concrete
+implementation to do the work itself.
 
 Now lets do a data retrieval function. In this case, the `get` function
 of the dictionary Signature.
