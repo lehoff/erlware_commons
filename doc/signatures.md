@@ -265,7 +265,7 @@ Lets get started by looking at some helper functions. We want
 dictionaries to have a bit of data in them. So to that end we are will
 create a couple of functions that create dictionaries for each type we
 want to test. The first we want to time is the Signature Wrapper, so
-dict vs ec_dict called as a Signature.
+`dict` vs `ec_dict` called as a Signature.
 
     :::erlang
     create_dict() ->
@@ -281,7 +281,7 @@ timing the function call overhead of Signatures, not the performance
 of the dictionaries themselves.
 
 We need to create a similar function for our Signature based
-dictionary ec_dict.
+dictionary `ec_dict`.
 
     :::erlang
     create_dictionary(Type) ->
@@ -292,10 +292,10 @@ dictionary ec_dict.
 		lists:seq(1,100)).
 
 Here we actually create everything using the Signature. So we don't
-need one function for each type. We can have on function that can
+need one function for each type. We can have one function that can
 create anything that implements the Signature. That is the magic of
 Signatures. Otherwise, this does the exact same thing as the dict
-create dictionary.
+`create_dict/1`.
 
 We are going to use two function calls in our timing. One that updates
 data and one that returns data, just to get good coverage. For our
@@ -317,7 +317,7 @@ The `test_avg` function runs the provided function the number of times
 specified in the second argument and collects timing information. We
 are going to run these one million times to get a good average (its
 fast so it doesn't take long). You can see that in the anonymous
-function that we directly call `dict:size` and `dict:store` to perform
+function that we directly call `dict:size/1` and `dict:store/3` to perform
 the test. However, because we are in the wonderful world of Signatures
 we don't have to hard code the calls for the Signature
 implementations. Lets take a look at the `time_dict_type` function.
@@ -332,7 +332,7 @@ implementations. Lets take a look at the `time_dict_type` function.
 	         end,
 	         1000000).
 
-As you can see we take the type as an argument (we need ti for dict
+As you can see we take the type as an argument (we need it for `dict`
 creation) and call our create function. Then we run the same timings
 that we did for ec dict. In this case though, the type of dictionary
 is never specified, we only ever call ec_dictionary, so this test will
@@ -343,22 +343,22 @@ work for anything that implements that Signature.
 So we have our tests, what was the result. Well on my laptop this is
 what it looked like.
 
-   :::sh
-   Erlang R14B01 (erts-5.8.2) [source] [64-bit] [smp:4:4] [rq:4] [async-threads:0] [hipe] [kernel-poll:false]
+    :::sh
+    Erlang R14B01 (erts-5.8.2) [source] [64-bit] [smp:4:4] [rq:4] [async-threads:0] [hipe] [kernel-poll:false]
 
-   Eshell V5.8.2  (abort with ^G)
+    Eshell V5.8.2  (abort with ^G)
 
-   1> ec_timing:time_direct_vs_signature_dict().
-   Timing dict
-   Range: 2 - 5621 mics
-   Median: 3 mics
-   Average: 3 mics
-   Timing ec_dict implementation of ec_dictionary
-   Testing ec_dict
-   Range: 3 - 6097 mics
-   Median: 3 mics
-   Average: 4 mics
-   2>
+    1> ec_timing:time_direct_vs_signature_dict().
+    Timing dict
+    Range: 2 - 5621 mics
+    Median: 3 mics
+    Average: 3 mics
+    Timing ec_dict implementation of ec_dictionary
+    Testing ec_dict
+    Range: 3 - 6097 mics
+    Median: 3 mics
+    Average: 4 mics
+    2>
 
 So for the direct dict call, we average about 3 mics per call, while
 for the Signature Wrapper we average around 4. Thats a 25% cost for
@@ -406,27 +406,27 @@ The main thing we are timing here is the additional cost of the
 dictionary Signature itself. Keep that in mind as we look at the
 results.
 
-   :::sh
-   Erlang R14B01 (erts-5.8.2) [source] [64-bit] [smp:4:4] [rq:4] [async-threads:0] [hipe] [kernel-poll:false]
+    :::sh
+    Erlang R14B01 (erts-5.8.2) [source] [64-bit] [smp:4:4] [rq:4] [async-threads:0] [hipe] [kernel-poll:false]
 
-   Eshell V5.8.2  (abort with ^G)
+    Eshell V5.8.2  (abort with ^G)
 
-   1> ec_timing:time_direct_vs_signature_rbdict().
-   Timing rbdict
-   Range: 6 - 15070 mics
-   Median: 7 mics
-   Average: 7 mics
-   Timing ec_dict implementation of ec_dictionary
-   Testing ec_rbdict
-   Range: 6 - 6013 mics
-   Median: 7 mics
-   Average: 7 mics
-   2>
+    1> ec_timing:time_direct_vs_signature_rbdict().
+    Timing rbdict
+    Range: 6 - 15070 mics
+    Median: 7 mics
+    Average: 7 mics
+    Timing ec_dict implementation of ec_dictionary
+    Testing ec_rbdict
+    Range: 6 - 6013 mics
+    Median: 7 mics
+    Average: 7 mics
+    2>
 
 So no difference it time. Well the reality is that there is a
 difference in timing, there must be, but we don't have enough
 resolution in the timing system to be able to figure out what that
-difference is. Essentially that means its really, really small, small
+difference is. Essentially that means its really, really small - or small
 enough not to worry about at the very least.
 
 Conclusion
