@@ -1,4 +1,4 @@
--module(ec_set_set).
+-module(ec_sets).
 
 -behaviour(ec_set).
 
@@ -7,7 +7,10 @@
 -export([new/0]).
 -export([size/1]).
 -export([add_element/2]).
+-export([del_element/2]).
+-export([is_element/2]).
 -export([to_list/1]).
+-export([from_list/1]).
 
 -export_type([set/1]).
 
@@ -26,7 +29,9 @@ add_element(Element,Set) ->
 del_element(Element,Set) ->
     sets:del_element(Element,Set).
 
-
+-spec is_element(T,set(T)) -> boolean().
+is_element(E,Set) ->
+    sets:is_element(E,Set).
 
 -spec size(set(_T)) -> non_neg_integer().
 size(Set) ->  
@@ -36,7 +41,10 @@ size(Set) ->
 to_list(Set) ->
     sets:to_list(Set).
 
-
+-spec from_list(list(T)) -> set(T).
+from_list(L) ->
+    sets:from_list(L).
+		       
 
 		  
 

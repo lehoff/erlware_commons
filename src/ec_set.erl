@@ -7,6 +7,7 @@
 -export([size/1]).
 -export([add_element/2]).
 -export([del_element/2]).
+-export([is_element/2]).
 -export([to_list/1]).
 -export([from_list/2]).
 
@@ -54,6 +55,11 @@ add_element(Element, #set_t{callback=Mod, data=Data}=Set1) ->
 del_element(Element, #set_t{callback=Mod, data=Data}=Set1) ->
     Set1#set_t{data = Mod:del_element(Element,Data)}.
 		 
+-spec is_element(Element::T, Set::set(T)) -> boolean().
+is_element(Element, #set_t{callback=Mod, data=Data}=_Set) ->
+    Mod:is_element(Element,Data).
+			
+
 -spec size(set(_T)) -> non_neg_integer().
 size(#set_t{callback=Mod, data=Data}) ->
     Mod:size(Data).
@@ -62,7 +68,7 @@ size(#set_t{callback=Mod, data=Data}) ->
 to_list(#set_t{callback=Mod, data=Data}) ->
     Mod:to_list(Data).
 		     
--spec from_list(list(T),module()) -> set(T).
-from_list(List,Callback) ->
+-spec from_list(module(),list(T)) -> set(T).
+from_list(Callback,List) ->
     #set_t{callback=Callback, data=Callback:from_list(List)}.
 		   

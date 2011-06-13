@@ -20,124 +20,59 @@ prop_size_increases_with_new_element() ->
     ?FORALL({Set,E}, {set(),element()},
 	    begin
 		Size = ec_set:size(Set),
-		case ec_set:has_key(E,Set) of
+		case ec_set:is_element(E,Set) of
 		    true ->
-			Size == ec_set:size(ec_set:add(E,Set));
+			Size == ec_set:size(ec_set:add_element(E,Set));
 		    false ->
-			(Size + 1) == ec_set:size(ec_set:add(E,Set))
+			(Size + 1) == ec_set:size(ec_set:add_element(E,Set))
 		end
 	    end).
 
 prop_size_decrease_when_removing() ->
-    ?FORALL({Dict,K}, {set(),integer()},
+    ?FORALL({Set,E}, {set(),element()},
 	    begin
-		Size = ec_set:size(Dict),
-		case ec_set:has_key(K,Dict) of
+		Size = ec_set:size(Set),
+		case ec_set:is_element(E,Set) of
 		    false ->
-			Size == ec_set:size(ec_set:remove(K,Dict));
+			Size == ec_set:size(ec_set:del_element(E,Set));
 		    true ->
-			(Size - 1) == ec_set:size(ec_set:remove(K,Dict))
+			(Size - 1) == ec_set:size(ec_set:del_element(E,Set))
 		end
 	    end).
 
-prop_get_after_add_returns_correct_value() ->
-    ?FORALL({Dict,K,V}, {set(),key(),value()},
+prop_is_element_after_add_element() ->
+    ?FORALL({Set,E}, {set(),element()},
 	    begin
-		try ec_set:get(K,ec_set:add(K,V,Dict)) of
-		    V ->
-			true;
-		    _ ->
-			false
-		catch
-		    _:_ ->
-			false
-		end
-	    end).
-
-prop_add_does_not_change_values_for_other_keys() ->
-    ?FORALL({Dict,K,V},  {set(),key(),value()},
-	    begin
-		Keys = ec_set:keys(Dict),
-		?IMPLIES(not lists:member(K,Keys),
-			 begin
-			     Dict2 = ec_set:add(K,V,Dict),
-			     try lists:all(fun(B) -> B end,
-					   [ ec_set:get(Ka,Dict) ==
-						 ec_set:get(Ka,Dict2) ||
-					       Ka <- Keys ]) of
-				 Bool -> Bool
-			     catch
-				 throw:not_found -> true
-			     end
-			 end)
+		ec_set:is_element(E,ec_set:add_element(E,Set))
 	    end).
 
 
 
-prop_key_is_present_after_add() ->
-    ?FORALL({Dict,K,V}, {set(),integer(),integer()},
+prop_to_list_after_add_element() ->
+    ?FORALL({Set,E},{set(),element()},
 	    begin
-		ec_set:has_key(K,ec_set:add(K,V,Dict))	    end).
-
-prop_value_is_present_after_add() ->
-    ?FORALL({Dict,K,V}, {set(),integer(),integer()},
-	    begin
-		ec_set:has_value(V,ec_set:add(K,V,Dict))
+		Set2 = ec_set:add_element(E,Set),
+		lists:usort(ec_set:to_list(Set2)) 
+		    == lists:usort([E|ec_set:to_list(Set)])
 	    end).
 
-prop_to_list_matches_get() ->
-    ?FORALL(Dict,set(),
+prop_to_list_after_del_element() ->
+    ?FORALL({Set,E},{set(),element()},
 	    begin
-		%% Dict = eval(SymDict),
-		%% io:format("SymDict: ~p~n",[proper_symb:symbolic_seq(SymDict)]),
-		ToList = ec_set:to_list(Dict),
-		%% io:format("ToList:~p~n",[ToList]),
-		GetList =
-		    try [ {K,ec_set:get(K,Dict)} || {K,_V} <- ToList ] of
-			List -> List
-		    catch
-			throw:not_found -> key_not_found
-		    end,
-		%% io:format("~p == ~p~n",[ToList,GetList]),
-		lists:sort(ToList) == lists:sort(GetList)
+		Set2 = ec_set:del_element(E,Set),
+		lists:usort(ec_set:to_list(Set2)) 
+		    == lists:usort( lists:delete(E,ec_set:to_list(Set)) )
 	    end).
 
-prop_value_changes_after_update() ->
-    ?FORALL({Dict, K1, V1, V2},
-	    {set(),
-	     key(), value(), value()},
-	    begin
-		Dict1 = ec_set:add(K1, V1, Dict),
-		Dict2 = ec_set:add(K1, V2, Dict1),
-		V1 == ec_set:get(K1, Dict1) andalso
-		    V2 == ec_set:get(K1, Dict2)
-	    end).
 
-prop_remove_removes_only_one_key() ->
-    ?FORALL({Dict,K},
-	    {set(),key()},
-	    begin
-		{KeyGone,Dict2} = case ec_set:has_key(K,Dict) of
-				      true ->
-					  D2 = ec_set:remove(K,Dict),
-					  {ec_set:has_key(K,D2) == false,
-					   D2};
-				      false ->
-					  {true,ec_set:remove(K,Dict)}
-				  end,
-		OtherEntries = [ KV || {K1,_} = KV <- ec_set:to_list(Dict),
-				       K1 /= K ],
-		KeyGone andalso 
-		    lists:sort(OtherEntries) == lists:sort(ec_set:to_list(Dict2))
-	    end).
 
 prop_from_list() ->
-    ?FORALL({Dict,DictType},
+    ?FORALL({Set,SetType},
 	    {set(),set_implementation()},
 	    begin
-		List = ec_set:to_list(Dict),
-		D2 = ec_set:from_list(DictType,List),
-		List2 = ec_set:to_list(D2),
+		List = ec_set:to_list(Set),
+		S2 = ec_set:from_list(SetType,List),
+		List2 = ec_set:to_list(S2),
 		lists:sort(List) == lists:sort(List2)
 	    end).
 	    
@@ -166,7 +101,7 @@ set(N) ->
       ).
 
 set_implementation() ->
-    union([ec_set_set]).
+    union([ec_sets]).
 
 
 
