@@ -11,6 +11,7 @@
 -export([is_element/2]).
 -export([to_list/1]).
 -export([from_list/1]).
+-export([filter/2]).
 
 -export_type([set/1]).
 
@@ -45,7 +46,9 @@ to_list(Set) ->
 from_list(L) ->
     sets:from_list(L).
 		       
-
+-spec filter(fun((T) -> boolean()), set(T)) -> set(T).
+filter(Pred, Set) ->
+    sets:filter(Pred,Set).
 		  
 
 

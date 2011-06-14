@@ -10,6 +10,7 @@
 -export([is_element/2]).
 -export([to_list/1]).
 -export([from_list/2]).
+-export([filter/2]).
 
 
 -export_type([set/1]).
@@ -38,7 +39,9 @@ behaviour_info(callbacks) ->
      {del_element, 2},
      {size, 1},
      {to_list, 1},
-     {from_list, 1}];
+     {from_list, 1},
+     {filter, 2}
+    ];
 behaviour_info(_) ->
     undefined.
 
@@ -69,6 +72,11 @@ to_list(#set_t{callback=Mod, data=Data}) ->
     Mod:to_list(Data).
 		     
 -spec from_list(module(),list(T)) -> set(T).
-from_list(Callback,List) ->
-    #set_t{callback=Callback, data=Callback:from_list(List)}.
+from_list(Mod,List) ->
+    #set_t{callback=Mod, data=Mod:from_list(List)}.
 		   
+-spec filter(fun((T) -> boolean()), set(T)) -> set(T).
+filter(Pred, #set_t{callback=Mod, data=Data}=Set) ->
+    Set#set_t{data = Mod:filter(Pred, Data)}.
+		    
+		     

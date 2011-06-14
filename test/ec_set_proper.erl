@@ -77,6 +77,16 @@ prop_from_list() ->
 	    end).
 	    
 
+prop_filter() ->
+    ?FORALL(Set, set(),
+	    begin
+		List = ec_set:to_list(Set),
+		Pred = fun (X) -> X > 0 end,
+		lists:usort( lists:filter(Pred,List) ) 
+		    == lists:usort( ec_set:to_list(ec_set:filter(Pred,Set)) )
+	    end).
+
+
 %%-----------------------------------------------------------------------------
 %% Generators
 %%-----------------------------------------------------------------------------
