@@ -17,6 +17,7 @@
 -export([new/1,
 	 has_key/2,
 	 get/2,
+	 get/3,
 	 add/3,
 	 remove/2,
 	 has_value/2,
@@ -86,6 +87,17 @@ has_key(Key, #dict_t{callback = Mod, data = Data}) ->
 -spec get(key(K), dictionary(K, V)) -> value(V).
 get(Key, #dict_t{callback = Mod, data = Data}) ->
     Mod:get(Key, Data).
+
+%% @doc given a key return that key from the dictionary. If the key is
+%% not found then the default value is returned.
+%%
+%% @param Dict The dictionary object to return the value from
+%% @param Key The key requested
+%% @param Default The value that will be returned if no value is found
+%% in the database.
+-spec get(key(K), value(V), dictionary(K, V)) -> value(V).
+get(Key, Default, #dict_t{callback = Mod, data = Data}) ->
+    Mod:get(Key, Default, Data).
 
 %% @doc add a new value to the existing dictionary. Return a new
 %% dictionary containing the value.

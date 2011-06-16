@@ -17,6 +17,7 @@
 -export([new/0,
 	 has_key/2,
 	 get/2,
+	 get/3,
 	 add/3,
 	 remove/2,
 	 has_value/2,
@@ -52,6 +53,18 @@ get(Key, Data) ->
 	    Value;
 	 error ->
 	    throw(not_found)
+    end.
+
+-spec get(ec_dictionary:key(K),
+	  ec_dictionary:value(V),
+	  Object::dictionary(K, V)) ->
+		 ec_dictionary:value(V).
+get(Key, Default, Data) ->
+    case dict:find(Key, Data) of
+	{ok, Value} ->
+	    Value;
+	 error ->
+	    Default
     end.
 
 -spec add(ec_dictionary:key(K), ec_dictionary:value(V),

@@ -15,6 +15,7 @@
 -export([new/0,
 	 has_key/2,
 	 get/2,
+	 get/3,
 	 add/3,
 	 remove/2,
 	 has_value/2,
@@ -51,6 +52,18 @@ get(Key, {ec_assoc_list, Data}) ->
 	    Value;
 	 false ->
 	    throw(not_found)
+    end.
+
+-spec get(ec_dictionary:key(K),
+	  ec_dictionary:value(V),
+	  Object::dictionary(K, V)) ->
+		 ec_dictionary:value(V).
+get(Key, Default, {ec_assoc_list, Data}) ->
+    case lists:keyfind(Key, 1, Data) of
+	{Key, Value} ->
+	    Value;
+	 false ->
+	    Default
     end.
 
 -spec add(ec_dictionary:key(K), ec_dictionary:value(V),

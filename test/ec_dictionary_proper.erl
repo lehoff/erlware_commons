@@ -54,6 +54,22 @@ prop_get_after_add_returns_correct_value() ->
 		end
 	    end).
 
+prop_get_default_returns_correct_value() ->
+    ?FORALL({Dict,K1,K2,V,Default},
+	    {sym_dict(),key(),key(),value(),value()},
+	    begin
+		NewDict = ec_dictionary:add(K1,V, Dict),
+		%% In the unlikely event that keys that are the same
+		%% are generated
+		case ec_dictionary:has_key(K2, NewDict) of
+		    true ->
+			true;
+		    false ->
+			ec_dictionary:get(K2, Default, NewDict) == Default
+		end
+	    end).
+
+
 prop_add_does_not_change_values_for_other_keys() ->
     ?FORALL({Dict,K,V},  {sym_dict(),key(),value()},
 	    begin
@@ -127,7 +143,7 @@ prop_remove_removes_only_one_key() ->
 				  end,
 		OtherEntries = [ KV || {K1,_} = KV <- ec_dictionary:to_list(Dict),
 				       K1 /= K ],
-		KeyGone andalso 
+		KeyGone andalso
 		    lists:sort(OtherEntries) == lists:sort(ec_dictionary:to_list(Dict2))
 	    end).
 
@@ -140,7 +156,7 @@ prop_from_list() ->
 		List2 = ec_dictionary:to_list(D2),
 		lists:sort(List) == lists:sort(List2)
 	    end).
-	    
+
 
 %%-----------------------------------------------------------------------------
 %% Generators

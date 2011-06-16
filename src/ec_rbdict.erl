@@ -59,7 +59,7 @@
 -behaviour(ec_dictionary).
 
 %% Standard interface.
--export([add/3, from_list/1, get/2, has_key/2,
+-export([add/3, from_list/1, get/2, get/3, has_key/2,
 	 has_value/2, new/0, remove/2, size/1, to_list/1,
 	 keys/1]).
 
@@ -102,6 +102,18 @@ get(K, {_, Left, K1, _, _}) when K < K1 ->
 get(K, {_, _, K1, _, Right}) when K > K1 ->
     get(K, Right);
 get(_, {_, _, _, Val, _}) ->
+    Val.
+
+-spec get(ec_dictionary:key(K),
+	  ec_dictionary:value(V),
+	  dictionary(K, V)) -> ec_dictionary:value(V).
+get(_, Default, empty) ->
+    Default;
+get(K, Default, {_, Left, K1, _, _}) when K < K1 ->
+    get(K, Default, Left);
+get(K, Default, {_, _, K1, _, Right}) when K > K1 ->
+    get(K, Default, Right);
+get(_, _, {_, _, _, Val, _}) ->
     Val.
 
 -spec add(ec_dicitonary:key(K), ec_dictionary:value(V),

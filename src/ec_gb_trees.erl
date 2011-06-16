@@ -16,6 +16,7 @@
 -export([new/0,
 	 has_key/2,
 	 get/2,
+	 get/3,
 	 add/3,
 	 remove/2,
 	 has_value/2,
@@ -76,6 +77,18 @@ get(Key, Data) ->
 	    Value;
 	none ->
 	    throw(not_found)
+    end.
+
+-spec get(ec_dictionary:key(K),
+	  ec_dictionary:value(V),
+	  Object::dictionary(K, V)) ->
+    ec_dictionary:value(V).
+get(Key, Default, Data) ->
+    case gb_trees:lookup(Key, Data) of
+	{value, Value} ->
+	    Value;
+	none ->
+	    Default
     end.
 
 %% @doc add a new value to the existing dictionary. Return a new
