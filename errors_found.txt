@@ -1,0 +1,31 @@
+1:
+Testing ec_dictionary_proper:prop_add_does_not_change_values_for_other_keys/0
+...!
+Failed: After 4 test(s).
+An exception was raised: error:undef.
+{{'$call',ec_dictionary,add,[[407463],[],{'$call',ec_dictionary,new,[ec_assoc_list]}]},'X',<<245>>}
+
+Shrinking ........(8 time(s))
+{{'$call',ec_dictionary,new,[ec_assoc_list]},0,0}
+
+Problem:
+9> D1 = ec_dictionary:new(ec_assoc_list).
+{dict_t,ec_assoc_list,{ec_assoc_list,[]}}
+10> D2 =ec_dictionary:add(0,0,D1).
+{dict_t,ec_assoc_list,{ec_assoc_list,[{0,0}]}}
+11> Keys = ec_dictionary:keys(D1).
+** exception error: undefined function list:map/2
+
+Should have been lists...
+
+
+==================================================================
+2:
+Failed: After 136 test(s).
+{'$call',ec_dictionary,add,[[],<<201>>,{'$call',ec_dictionary,add,[[],<<57,75,110,207,166>>,{'$call',ec_dictionary,add,[[914843],<<>>,{'$call',ec_dictionary,add,['e\224\222&ø',<<104,67,160,43>>,{'$call',ec_dictionary,add,['0è5',true,{'$call',ec_dictionary,add,['yH=º',true,{'$call',ec_dictionary,new,[ec_assoc_list]}]}]}]}]}]}]}
+
+Shrinking ...........(11 time(s))
+{'$call',ec_dictionary,add,[[],0,{'$call',ec_dictionary,add,[[],-1,{'$call',ec_dictionary,new,[ec_assoc_list]}]}]}
+
+Problem: add did not remove the old entry for the key.
+
